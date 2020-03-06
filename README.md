@@ -13,8 +13,6 @@ This plugin is written in Adobe ScriptUI and utilizes the Adobe Bridge JavaScrip
    - Field name for export-import can be changed (allows synchronization with local field names)
    - Custom schemas and namespaces can be used
 
-## For more details, see the [wiki](https://github.com/GregReser/Customizable_Export-Import/wiki)
-
 IT IS HIGHLY RECOMMENDED THAT YOU BACKUP YOUR IMAGE FILES BEFORE USING THIS OR ANY XMP INFO PANEL INFO PANEL.	
 THERE ARE NO WARRANTIES FOR LOSS OR UNINTENDED MODIFICATION OF DATA.*	
 
