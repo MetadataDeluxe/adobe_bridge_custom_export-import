@@ -26,7 +26,7 @@ THERE ARE NO WARRANTIES FOR LOSS OR UNINTENDED MODIFICATION OF DATA.*
     Mac:
       - Go to Adobe Bridge --> Preferences --> Startup Scripts
  3. Click "Reveal My Startup Scripts".  This will open the correct folder
- 4. In this folder, copy the the downloaded file "user_customizable_export_import.jsx"
+ 4. In this folder, copy the the downloaded file "custom_export_import.jsx"
  5. Close the folder
  6. Quit Bridge
  7. Start Bridge
