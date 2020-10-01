@@ -1,4 +1,4 @@
-﻿#target bridge
+﻿#target bridge-10
 
 if (BridgeTalk.appName == 'bridge')
 
@@ -28,31 +28,8 @@ SOFTWARE.
 var projectName1 = "Custom Metadata" // human friendly
 var projectName2 = "Custom_Metadata" // computer friendly.  filenames - don't use spaces, use camelCase or _ or -
 var plgnVers = "1.0";
-var codeVers = "2020-01-28"
-// added .hide() to all palette .close(), fixed Mapping display; changed export file name to current foler+dateYMD; replaced type with xmpType; replaced header with label
-// changed field arr to new style; using indexOf to remove prefix from XMP_Property for read/write; fixed fieldList.add to use dropdown field text
-// added new build properties; added populate fields list based on lastViewedHeadersPanel; register namespaces from lastViewedHeadersPanel
-// added try catch to loadCustom.but1.onClick
-// added originalLastViewedHeadersPanel and originalCustomFileText so original values can be restored when custom fields window Cancel is clicked
-// added set load standard schema dropdown to "" when Clear is clicked
-// moved var exportSaveLocation within export function
-// added var customFileArr = customFileText.split("\n") to import function
-// changed the way images folder location is determined and displayed - added expImp_thumbSelected as eventHandler, delete this handler on window close
-// added basicFieldsArr; added; if(textFile[textFile.length-1].length == 0) to if "Match on filename" is selected check that column B has a value, else show alert
-// added to loadSchema.dd1.onChange: if(schemaArr[Lls].Schema_Field != "File-Name") to avoid double File-Name properties
-// changed fieldsArr item Field: to Schema_Field:
-// fieldsWindow.close(); // causes fieldsWindow to not re-open after Cancel, so MOVED to mainWindow.onClose()
-// changed "Add" button function so new field is inserted below currently selected filed in the list
-// function saveCustomHeaders(){ - added mainWindow.enabled = true;
-// saveCustomHeaders(){ - moved change custom fields label on main window within if(enterCustomNameName.text){
-// var pos = 0 - added condition based on number of items in list
-// 2019-12-01 addBtn.onClick=function(){ - added var itemSelectedIndex = fieldList.items.length-1; set selected item to new added field
-// experimenting with multi-column fields fieldList. See addMoveDelteBtns.but1.onClick
-// changed pluginPrefs to projectName2
-// changed var fieldList2 to var fieldList
-// testing github
-
-
+var codeVers = "2020-10-01"
+        
 { // brace 1 open
 
 //Create a menu option within Adobe Bridge
@@ -174,7 +151,13 @@ var UPprefsVersion = '2.0.9'; //always increment with preference file changes
           var appDataPlgnSetBkSlash = appDataPlgnSetBkSlash.split ("~").join ("");
           while (appDataPlgnSetBkSlash.split ("//").length > 1) var appDataPlgnSetBkSlash = appDataPlgnSetBkSlash.split ("//").join ("/");
 		}
-   
+   // set slach charcter (for direcetory and file path) based on operating system TODO: test on Mac
+    if (Folder.fs == "Windows"){
+        var slash = "\\";
+        }
+    else{
+        var slash = "/";
+        }
     // desktop
     if (Folder.fs == "Windows"){
 		var desktop = "~\\Desktop\\";
@@ -207,25 +190,27 @@ var UPprefsVersion = '2.0.9'; //always increment with preference file changes
     // preferredSize for UI objects
     if (Folder.fs == "Windows"){
         var buttonSize1 = [20,20];
-        var buttonSize3 = [80,20]
+      //  var buttonSize3 = [80,20]
         var textSize1 = [550,20]
         var spcr1=[0,0,40,20];
-        var dim1=[0,0,80,25];
-var dim2=[0,0,100,25];
-var dim3=[0,0,200,25];
-var dim4=[0,0,300,25];
+        var dim08=[0,0,80,25];
+var dim1=[0,0,100,25];
+var dim2=[0,0,200,25];
+var dim3=[0,0,300,25];
+var dim4=[0,0,400,25];
 var dim5=[0,0,500,25];
 var dimC=[0,0,100,200];
 var dimL = [0,0,1080,450];
         }
     else{
         var buttonSize1 = [34,34];
-        var buttonSize3 = [100,34]
+     //   var buttonSize3 = [100,34]
         var textSize1 = [560,20]
-        var dim1=[0,0,80,25];
-var dim2=[0,0,100,25];
-var dim3=[0,0,200,25];
-var dim4=[0,0,300,25];
+        var dim08=[0,0,80,25];
+var dim1=[0,0,100,25];
+var dim2=[0,0,200,25];
+var dim3=[0,0,300,25];
+var dim4=[0,0,400,25];
 var dim5=[0,0,500,25];
 var dimC=[0,0,100,200];
 var dimL = [0,0,1000,450];
@@ -254,13 +239,13 @@ var dimL = [0,0,1000,450];
             settingsGroup = mainWindow.add('group', un, un)
             //settingsGroup.preferredSize = [720, 20]
             settingsGroup.alignment='left';
-            fieldsTxt = settingsGroup.add('statictext', dim4, "Fields: "+lastViewedHeadersPanel)
+            fieldsTxt = settingsGroup.add('statictext', dim3, "Current Fields: "+lastViewedHeadersPanel)
             //fieldsTxt.justify = "center";
             fieldsTxt.graphics.font = ScriptUI.newFont ("Arial", 'BOLD', 16);
             fieldsTxt.graphics.foregroundColor = fieldsTxt.graphics.newPen (mainWindow.graphics.PenType.SOLID_COLOR, [1,0.58,0], 1);
             fieldsTxt.helpTip = "List of fields to be exported/imported"; // name of the currently loaded field list
-            setHeaders = settingsGroup.add('button', undefined, "Edit")
-            setHeaders.preferredSize = [80,30] //buttonSize9
+            setHeaders = settingsGroup.add('button', undefined, "Edit Fields")
+            setHeaders.preferredSize = [120,30] //buttonSize9
             //  setHeaders.alignment = 'left';
             setHeaders.helpTip = "Edit the list of fields to be exported/imported";
             setHeaders.onClick = function(){
@@ -678,7 +663,8 @@ var dimL = [0,0,1000,450];
           dataSourceBrowse.onClick =  function(){
             var filePath = File.openDialog( 'Select the text file (.txt)',  "TXT  Files:*.txt" );
                 if(filePath){
-                dataSource.text = filePath.toString().split ("%20").join (" ");
+             //   dataSource.text = filePath.toString().split ("%20").join (" ");
+                dataSource.text = filePath.fsName.toString().split ("%20").join (" ");  // PATH EDIT
                 testTextFileExists();
                 dataSource.helpTip = dataSource.text+"\n\n"+textFilePath
                 }
@@ -792,35 +778,33 @@ var dimL = [0,0,1000,450];
 		cancelBtn = mainWindow.add('button', undefined, "Cancel");
 		cancelBtn.minimumSize = [150, 25];
 		cancelBtn.onClick = function(){
-   
-
-var appDataPlgnSet = File (appDataFwdSlash + plgnPrefs + plgnOpt + plgnSet);
-        //  ~/AppData/Roaming/IPTC_CH_Import_Export/Options/settings.txt
-        appDataPlgnSet.open ("w", "TEXT", "ttxt");
-        appDataPlgnSet.write (exportWhich.folderRb.value  + "|");
-        appDataPlgnSet.write (exportWhich.subfoldersCb.value  + "|");  
-        appDataPlgnSet.write (exportWhich.fieldsArrRb.value + "|");
-        appDataPlgnSet.write (exportOptions.datesCb.value + "|");
-        appDataPlgnSet.write (dataSource.text + "|");
-        appDataPlgnSet.write (writeOptions.appendRb.value+ "|");
-        appDataPlgnSet.write (writeOptions.overwriteRb.value + "|");
-        appDataPlgnSet.write (IgnoreExtCb.value+ "|");
-        appDataPlgnSet.write (addLabelCb.value+ "|");
-        appDataPlgnSet.write (exportOptionsLfCb.value+"|");
-        appDataPlgnSet.write (exportChoice+"|");
-        appDataPlgnSet.write (exportWhich.folderEt.text + "|");
-        appDataPlgnSet.write (imageLoc.text+ "|");
-        appDataPlgnSet.write (imageLocSubfoldersCb.value+ "|");
-        appDataPlgnSet.write (dataSourceOptions.Path.value+ "|");
-        appDataPlgnSet.write (dataSourceOptions.Name.value+ "|");
-        appDataPlgnSet.write (dataSourceOptions.enabled+ "|");
-        appDataPlgnSet.write (IgnoreExtCb.enabled+ "|");
-        appDataPlgnSet.write (mode+ "|");
-        appDataPlgnSet.write (lastViewedHeadersPanel);
-        appDataPlgnSet.close();
-        // close hte main UI window   
-        mainWindow.hide();
-        mainWindow.close();     
+            var appDataPlgnSet = new File (appDataFwdSlash + plgnPrefs + plgnOpt + plgnSet);
+            appDataPlgnSet.encoding = "UTF8";
+            appDataPlgnSet.open ("w", "TEXT", "ttxt");      
+            appDataPlgnSet.write (exportWhich.folderRb.value  + "|");
+            appDataPlgnSet.write (exportWhich.subfoldersCb.value  + "|");  
+            appDataPlgnSet.write (exportWhich.fieldsArrRb.value + "|");
+            appDataPlgnSet.write (exportOptions.datesCb.value + "|");
+            appDataPlgnSet.write (dataSource.text + "|");
+            appDataPlgnSet.write (writeOptions.appendRb.value+ "|");
+            appDataPlgnSet.write (writeOptions.overwriteRb.value + "|");
+            appDataPlgnSet.write (IgnoreExtCb.value+ "|");
+            appDataPlgnSet.write (addLabelCb.value+ "|");
+            appDataPlgnSet.write (exportOptionsLfCb.value+"|");
+            appDataPlgnSet.write (exportChoice+"|");
+            appDataPlgnSet.write (exportWhich.folderEt.text + "|");
+            appDataPlgnSet.write (imageLoc.text+ "|");
+            appDataPlgnSet.write (imageLocSubfoldersCb.value+ "|");
+            appDataPlgnSet.write (dataSourceOptions.Path.value+ "|");
+            appDataPlgnSet.write (dataSourceOptions.Name.value+ "|");
+            appDataPlgnSet.write (dataSourceOptions.enabled+ "|");
+            appDataPlgnSet.write (IgnoreExtCb.enabled+ "|");
+            appDataPlgnSet.write (mode+ "|");
+            appDataPlgnSet.write (lastViewedHeadersPanel);
+            appDataPlgnSet.close();
+            // close hte main UI window   
+            mainWindow.hide();
+            mainWindow.close();     
 			}
  
      // if file 'appDataFwdSlash/"+projectName1+"_Import_Export/Options/settings.txt' exists, read settings and apply to dialog
@@ -851,7 +835,7 @@ var appDataPlgnSet = File (appDataFwdSlash + plgnPrefs + plgnOpt + plgnSet);
 			if (pluginSettingsArray[16] == "false") dataSourceOptions.enabled = false;
 			if (pluginSettingsArray[17] == "false") IgnoreExtCb.enabled = false;         
             if (pluginSettingsArray[18]) mode = pluginSettingsArray[18];
-            if (pluginSettingsArray[19]) lastViewedHeadersPanel = pluginSettingsArray[19]; fieldsTxt.text = "Fields: "+lastViewedHeadersPanel;
+            if (pluginSettingsArray[19]) lastViewedHeadersPanel = pluginSettingsArray[19]; fieldsTxt.text = "Current Fields: "+lastViewedHeadersPanel;
 			}
           catch(pluginSettingsError){
                if (appDataPlgnSetBkSlash.exists == true) appDataPlgnSetBkSlash.remove();
@@ -860,88 +844,95 @@ var appDataPlgnSet = File (appDataFwdSlash + plgnPrefs + plgnOpt + plgnSet);
 // if user prefs file contains lastViewedHeadersPanel, load custom fields
 var customFilePath = File (appDataFwdSlash + plgnPrefs + plgnHeaders + "/"+lastViewedHeadersPanel + ".txt");
 if (customFilePath.exists == true){ // !!! if "- Select Custom -"
-customFilePath.open ('r');
-customFileText = customFilePath.read()//.split ('|'); 
-customFilePath.close();
-fieldsTxt.text = "Fields: "+lastViewedHeadersPanel
+    customFilePath.open ('r');
+    customFileText = customFilePath.read()//.split ('|'); 
+    customFilePath.close();
+    fieldsTxt.text = "Current Fields: "+lastViewedHeadersPanel
+    // convert that to the fieldsArr
+    // TODO: problem - fieldsArr is not accessible when export import functions run so it is being re-created several times later in the code.  Is there a better way to do this?
+    var customFileArr = customFileText.split("\n");
+    fieldsArr = [];
+    for (var L1 = 0; L1 < customFileArr.length; L1++){
+        var obj = new Object();
+        obj = eval('(' + customFileArr[L1] + ')');
+        fieldsArr.push(obj)
+        }
+    // get unique values of namespace and prefix from objects in array
+    var found = {}; 
+    var out = [];
+    var count = 0;
+    for(var i = 0; i < fieldsArr.length; i++) {  
+        var namespaceObject = {}
+         var item = fieldsArr[i].Namespace;
+         var pre = fieldsArr[i].XMP_Property;
+        prefixArr = fieldsArr[i].XMP_Property.split(":")
+        var pre2 = prefixArr[0];
 
-// convert that to the fieldsArr
-// TODO: problem - fieldsArr is not accessible when export import functions run so it is being re-created several times later in the code.  Is there a better way to do this?
-var customFileArr = customFileText.split("\n");
-fieldsArr = [];
-for (var L1 = 0; L1 < customFileArr.length; L1++){
-    var obj = new Object();
-    obj = eval('(' + customFileArr[L1] + ')');
-    fieldsArr.push(obj)
-    }
-
-// get unique values of namespace and prefix from objects in array
-var found = {}; 
-var out = [];
-var count = 0;
-for(var i = 0; i < fieldsArr.length; i++) {  
-    var namespaceObject = {}
-     var item = fieldsArr[i].Namespace;
-     var pre = fieldsArr[i].XMP_Property;
-     
-    prefixArr = fieldsArr[i].XMP_Property.split(":")
-    var pre2 = prefixArr[0];
-
-     if(found[item] !== 1) {
-       found[item] = 1;
-       namespaceObject.namespace = item;
-       namespaceObject.prefix = pre2;
-       if(item.length>0){ // this function returns an empty item at the beginning, so only write to the array if it has data
-        out[count++] = namespaceObject;    
-         }        
+         if(found[item] !== 1) {
+           found[item] = 1;
+           namespaceObject.namespace = item;
+           namespaceObject.prefix = pre2;
+           if(item.length>0){ // this function returns an empty item at the beginning, so only write to the array if it has data
+            out[count++] = namespaceObject;    
+             }        
+            }
+        }
+        // register namespaces
+        /* Namespaces
+        these default namespaces can be used without registering them:
+            XMPConst.NS_AUX
+            XMPConst.NS_DC
+            XMPConst.NS_EXIF
+            XMPConst.NS_IPTC_CORE
+            XMPConst.NS_PHOTOSHOP
+            XMPConst.NS_TIFF
+            XMPConst.NS_XML
+            XMPConst.NS_XMP
+            XMPConst.NS_XMP_RIGHTS          
+        other namespaces must be registered below 
+        */
+        // register w3 for writing LangAlt properties CHANGED to XMPConst.NS_XML
+    //    var NS_W3 = "http://www.w3.org/XML/1998/namespace";
+     //   XMPMeta.registerNamespace (NS_W3, "xml");
+        // PLUS prefix is problematic - might need to do this, not sure...
+       // XMPMeta.registerNamespace ("http://ns.useplus.org/ldf/xmp/1.0/", "plus");
+      //  var plusPrefix = XMPMeta.getNamespacePrefix ("http://ns.useplus.org/ldf/xmp/1.0/");
+        //var plusCRownerName = "CopyrightOwner[1]/"+plusPrefix+"CopyrightOwnerName"
+    for (var L2 = 0; L2 < out.length; L2++){
+        // not "file"
+        if(out[L2].namespace != "file"){
+            XMPMeta.registerNamespace(out[L2].namespace, out[L2].prefix);
+         }
         }
     }
-// register namespaces
-    /* Namespaces
-    these default namespaces can be used without registering them:
-        XMPConst.NS_DC
-        XMPConst.NS_EXIF
-        XMPConst.NS_IPTC_CORE
-        XMPConst.NS_PHOTOSHOP
-        XMPConst.NS_TIFF
-        XMPConst.NS_XMP
-        XMPConst.NS_XMP_RIGHTS
-        XMPConst.NS_AUX
-    other namespaces must be registered below 
-    */
-    // register w3 for writing LangAlt properties
-    var NS_W3 = "http://www.w3.org/XML/1998/namespace";
-    XMPMeta.registerNamespace (NS_W3, "xml");
-    // PLUS prefix is problematic - might need to do this, not sure...
-   // XMPMeta.registerNamespace ("http://ns.useplus.org/ldf/xmp/1.0/", "plus");
-  //  var plusPrefix = XMPMeta.getNamespacePrefix ("http://ns.useplus.org/ldf/xmp/1.0/");
-    //var plusCRownerName = "CopyrightOwner[1]/"+plusPrefix+"CopyrightOwnerName"
-for (var L2 = 0; L2 < out.length; L2++){
-    // not "file"
-    if(out[L2].namespace != "file"){
-        XMPMeta.registerNamespace(out[L2].namespace, out[L2].prefix);
-     }
-    }
-}
 else{
-    fieldsTxt.text = "Fields: UNDEFINED,  click Edit →"
+    // HERE! load Basic fields if customFilePath.exists == false ?
+    fieldsTxt.text = "Fields: UNDEFINED"
     };
   
 // get current Bridge folder and file paths to automatically fill form. Not sure why, but both of the following methods are needed
         if(app.document.visibleThumbnails == true){
+            /* PATH EDIT
             var slicePathIndex = app.document.visibleThumbnails[0].spec.toString().lastIndexOf ("/")
             var path = app.document.visibleThumbnails[0].spec.toString().substr(0,slicePathIndex+1).split("%20").join(" ")
+            */
+          //  var slicePathIndex = app.document.visibleThumbnails[0].spec.fsName.toString().lastIndexOf ("\\")
+            var path = app.document.presentationPath.split(slash).join("/")+"/"; // app.document.visibleThumbnails[0].spec.fsName.toString().substr(0,slicePathIndex+1).split("%20").join(" ")
             exportWhich.folderEt.text = path
             imageLoc.text = path
             }
         
 		// get current Bridge folder and file paths to automatically fill form
 		if(app.document.visibleThumbnails){
-			 var slicePathIndex = app.document.visibleThumbnails[0].spec.toString().lastIndexOf ("/")
-			 var path = app.document.visibleThumbnails[0].spec.toString().substr(0,slicePathIndex+1).split("%20").join(" ")
-			 exportWhich.folderEt.text = path
-			 imageLoc.text = path		     
-			}
+            /* PATH EDIT
+            var slicePathIndex = app.document.visibleThumbnails[0].spec.toString().lastIndexOf ("/")
+            var path = app.document.visibleThumbnails[0].spec.toString().substr(0,slicePathIndex+1).split("%20").join(" ")
+            */
+        //    var slicePathIndex = app.document.visibleThumbnails[0].spec.fsName.toString().lastIndexOf ("\\")
+            var path = app.document.presentationPath.split(slash).join("/")+"/"; //app.document.visibleThumbnails[0].spec.fsName.toString().substr(0,slicePathIndex+1).split("%20").join(" ")
+            exportWhich.folderEt.text = path
+            imageLoc.text = path		     
+			}   
      
 		if (hardDriveCheck == null) var hardDriveCheck = hardDrive;
 		toggleExportWhich();
@@ -957,6 +948,35 @@ else{
         toggleNav()
 		// open the window
 		mainWindow.show();   
+        
+        // if no fields list exists, open a new window to prompt user to edit the fields list
+        editFieldsPrompt = new Window('palette', "Fields UNDEFINED");
+        editFieldsPrompt.spacing = 20;
+        editFieldsPrompt.alignChildren = 'center';
+        editFieldsPrompt.preferredSize = [600,400];
+
+        editFieldsPromptSpcr1 = editFieldsPrompt.add('statictext', undefined, "");
+        editFieldsPromptSpcr1.minimumSize = [10,80];
+
+        editFieldsPromptSt1 = editFieldsPrompt.add('statictext', undefined, "There are no fields defined for Export/Import\n\nBegin by adding items to the Fields List", {multiline:true})
+        editFieldsPromptSt1.minimumSize = [500,30];
+        editFieldsPromptSt1.justify = 'center';
+        editFieldsPromptSt1.graphics.font = ScriptUI.newFont ("Arial", "Bold", 16);
+        editFieldsPromptSt1.graphics.foregroundColor = editFieldsPromptSt1.graphics.newPen (editFieldsPromptSt1.graphics.PenType.SOLID_COLOR, [1,0.58,0], 1);
+
+        editFieldsPromptCancelBtn = editFieldsPrompt.add('button', undefined, "Edit Fields");
+        editFieldsPromptCancelBtn.preferredSize = [120,30]
+        editFieldsPromptCancelBtn.onClick =  function(){ 
+            editFieldsPrompt.hide();
+            editFieldsPrompt.close();
+            mainWindow.enabled = false;
+            fieldsWindow.show();
+            originalLastViewedHeadersPanel = lastViewedHeadersPanel;
+            originalCustomFileText = customFileText;
+            }
+        if(fieldsTxt.text == "Fields: UNDEFINED"){
+        editFieldsPrompt.show();
+        }
      } // main UI window - brace 1 close
 //////////////////////////////////////////////////////////////// END OF MAIN UI WINDOW ////////////////////////////////////////////////////////////////
 var basicFieldsArr = [
@@ -1131,17 +1151,17 @@ loadCustom.spacing=0;
 loadCustom.orientation = "column";
 
 loadCustom.grp2 = loadCustom.add("group");
-//loadCustom.st1 = loadCustom.grp2.add("statictext", dim2, "Current Fields: ");
+//loadCustom.st1 = loadCustom.grp2.add("statictext", dim1, "Current Fields: ");
 //loadCustom.st1.minimumSize = [50,20];
 //loadCustom.st1.graphics.font = ScriptUI.newFont ("Arial", 'BOLD', 14);
 //loadCustom.st1.graphics.foregroundColor = loadCustom.st1.graphics.newPen (mainWindow.graphics.PenType.SOLID_COLOR, [1,0.58,0], 1);
-loadCustom.et1 = loadCustom.grp2.add("statictext", dim3, "Current Fields: UNDEFINED"); //loadCustom.et1.text = "Current Fields: UNDEFINED";
+loadCustom.et1 = loadCustom.grp2.add("statictext", dim2, "Current Fields: UNDEFINED"); //loadCustom.et1.text = "Current Fields: UNDEFINED";
 loadCustom.et1.minimumSize = [300,20];
 //loadCustom.et1.justify = "center";
 loadCustom.et1.graphics.font = ScriptUI.newFont ("Arial", 'BOLD', 14);
 loadCustom.et1.graphics.foregroundColor = loadCustom.et1.graphics.newPen (mainWindow.graphics.PenType.SOLID_COLOR, [1,0.58,0], 1);
 loadCustom.et1.helpTip = "List of fields to be exported/imported";
-loadCustom.but1 = loadCustom.grp2.add("button", dim1, "Change");
+loadCustom.but1 = loadCustom.grp2.add("button", dim08, "Change");
 loadCustom.but1.helpTip = "Select and load a saved custom field list.";
 loadCustom.but1.onClick = function(){ // open user prefs folder to find a saved custom fields config file
     try{
@@ -1177,7 +1197,7 @@ loadCustom.but1.onClick = function(){ // open user prefs folder to find a saved 
      // loadCustom.but1.onClick set lastViewedHeadersPanel to customFilePath file name only
      lastViewedHeadersPanel = customFilePathFileName;
     // loadCustom.but1.onClick set custom mapping display to customFilePath file name only
-    fieldsTxt.text = "Fields: "+customFilePathFileName;
+    fieldsTxt.text = "Current Fields: "+customFilePathFileName;
      // TODO: loadCustom.but1.onClick convert .txt to fieldArr handling this in export import functions for now. change that?
 triggerEnterCustomName = false;
     } // CLOSE  if (customFilePath.exists == true)
@@ -1186,7 +1206,7 @@ catch(e){}
 } // CLOSE loadCustom.but1.onClick
 
 //loadCustom.spcr1 = loadCustom.grp2.add("statictext", spcr1, "");
-loadCustom.but2 = loadCustom.grp2.add("button", dim1, "Manage");
+loadCustom.but2 = loadCustom.grp2.add("button", dim08, "Manage");
 loadCustom.but2.helpTip = "Open folder containing your custom field lists so you can edit or delete them.";
 loadCustom.but2.onClick =  function(){ // open user prefs folder
     Folder(appDataFwdSlash + plgnPrefs + plgnHeaders).execute()
@@ -1276,7 +1296,7 @@ var ListFormatInstBody =
 	   loadCustomInst.show();
 	}
 
-var spcr1 = fieldsWindow.add ("statictext", dim4, "");
+var spcr1 = fieldsWindow.add ("statictext", dim3, "");
 
 var fieldInput = fieldsWindow.add("group");
 fieldInput.alignChildren = "left";
@@ -1284,7 +1304,7 @@ fieldInput.orientation = "column";
 fieldInput.spacing = 0;
 // where the user selects and customizes  fields
 var fieldInputLabelGrp = fieldInput.add("group");
-var fieldInputLabel = fieldInputLabelGrp.add("statictext", dim2, "Edit Fields");
+var fieldInputLabel = fieldInputLabelGrp.add("statictext", dim1, "Edit Fields");
 fieldInputLabel.alignment = "left";
 fieldInputLabel.graphics.font = ScriptUI.newFont ("Arial", 'BOLD', 14)
 
@@ -1339,10 +1359,10 @@ loadSchema.alignChildren = "left";
 loadSchema.margins = [0,0,0,0];
 loadSchema.spacing=0;
 loadSchema.orientation = "column";
-loadSchema.st1 = loadSchema.add("statictext", dim2, "Load standard schema fields")
+loadSchema.st1 = loadSchema.add("statictext", dim1, "Load standard schema fields")
 loadSchema.st1.minimumSize = [300,20];
 loadSchema.grp1 = loadSchema.add("group");
-loadSchema.dd1 = loadSchema.grp1.add("dropdownlist", dim3, ["","File","Basic","IPTC Core","Dublin Core","VRA Core"]);
+loadSchema.dd1 = loadSchema.grp1.add("dropdownlist", dim2, ["","File","Basic","IPTC Core","Dublin Core","VRA Core"]);
 
 loadSchema.dd1.onChange=function(){
   var fileNameRegex = /File-Name/;
@@ -1372,23 +1392,23 @@ loadSchema.dd1.onChange=function(){
     lastViewedHeadersPanel = loadSchema.dd1.selection.text;
     triggerEnterCustomName = true;
     };
-//spacerX = fieldInput.add("statictext", dim2, "");
-addFieldsLbl = fieldInput.add("statictext", dim2, "Add a field");
+//spacerX = fieldInput.add("statictext", dim1, "");
+addFieldsLbl = fieldInput.add("statictext", dim1, "Add a field");
 addFieldsLbl.margins = [0,0,0,0];
 var fieldLabels =fieldInput.add("group");
 fieldLabels.spacing=5;
 fieldLabels.margins = [0,0,0,0];
-fieldLabels.lbl1 = fieldLabels.add("statictext", dim2, "Schema");
+fieldLabels.lbl1 = fieldLabels.add("statictext", dim1, "Schema");
 fieldLabels.lbl1.helpTip = "Pre-defined schema field name (not editable)";
-fieldLabels.lbl2 = fieldLabels.add("statictext", dim3, "Field");
+fieldLabels.lbl2 = fieldLabels.add("statictext", dim2, "Field");
 fieldLabels.lbl2.helpTip = "Do not change for pre-defined schemas, set your own for custom property";
-fieldLabels.lbl3 = fieldLabels.add("statictext", dim3, "My Label");
+fieldLabels.lbl3 = fieldLabels.add("statictext", dim2, "My Label");
 fieldLabels.lbl3.helpTip = "The label you want to use for the field";
-fieldLabels.lbl4 = fieldLabels.add("statictext", dim4, "Namespace");
+fieldLabels.lbl4 = fieldLabels.add("statictext", dim3, "Namespace");
 fieldLabels.lbl4.helpTip = "namespace URL, EXAMPLE: http://purl.org/dc/elements/1.1/";
-fieldLabels.lbl5 = fieldLabels.add("statictext", dim3, "XMP_Property");
+fieldLabels.lbl5 = fieldLabels.add("statictext", dim2, "XMP_Property");
 fieldLabels.lbl5.helpTip = "namespace prefix:property name, EXAMPLE: dc:title";
-fieldLabels.lbl6 = fieldLabels.add("statictext", dim1, "XMP_Type");
+fieldLabels.lbl6 = fieldLabels.add("statictext", dim08, "XMP_Type");
 fieldLabels.lbl6.helpTip = "XMP property type. Consult schema documentation, or set for your custom property";
 //fieldLabels.graphics.backgroundColor = fieldsWindow.graphics.newBrush(fieldsWindow.graphics.BrushType.SOLID_COLOR,[0.7,0.7,0.7], 1);
 //for(var i = 0; i < fieldLabels.children.length; i++)
@@ -1397,13 +1417,13 @@ fieldLabels.lbl6.helpTip = "XMP property type. Consult schema documentation, or 
 var inputs =fieldInput.add("group"); inputs.spacing=5;
 //inputs.margins = [0,0,0,0];
 inputs.spacing=5;
-inputs.ddl10 = inputs.add("dropdownlist", dim2, schemaArr) // Schema
+inputs.ddl10 = inputs.add("dropdownlist", dim1, schemaArr) // Schema
 //inputs.ddl10.selection = 0
-inputs.ddl1 = inputs.add("dropdownlist", dim3, []) // Field
-inputs.et1 = inputs.add("edittext", dim3, '') // Label
-inputs.et2 = inputs.add("edittext", dim4, '') // Namespace
-inputs.et3 = inputs.add("edittext", dim3, '') // XMP_Property
-inputs.ddl2 = inputs.add("dropdownlist", dim1, xmpTypeArr) // XMP_Type
+inputs.ddl1 = inputs.add("dropdownlist", dim2, []) // Field
+inputs.et1 = inputs.add("edittext", dim2, '') // Label
+inputs.et2 = inputs.add("edittext", dim3, '') // Namespace
+inputs.et3 = inputs.add("edittext", dim2, '') // XMP_Property
+inputs.ddl2 = inputs.add("dropdownlist", dim08, xmpTypeArr) // XMP_Type
 
 if (typeof Array.prototype.indexOf != "function") {  
     Array.prototype.indexOf = function (el) {  
@@ -1474,18 +1494,18 @@ if (typeof Array.prototype.indexOf != "function") {
         return -1;  
         }
     }
-
+var fieldsWindowScpr = fieldsWindow.add('statictext', undefined, "");
 // add field from entered values
-addBtn = fieldsWindow.add('button', [0,0,200,25], "Add") //dim1 [0,0,80,25]
-addBtn.alignment = 'left';
-addBtn.indent = 110;
+addBtn = fieldsWindow.add('button', [0,0,150,25], "Add") //dim08 [0,0,80,25]
+addBtn.alignment = 'center';
+//addBtn.indent = 110;
 addBtn.enabled = false;
 
 addMoveDelteBtns =fieldsWindow.add('group');
 addMoveDelteBtns.orientation = "row";
-addMoveDelteBtns.indent = 110;
+addMoveDelteBtns.alignment = 'center';
+//addMoveDelteBtns.indent = 110;
 addMoveDelteBtns.but1 = addMoveDelteBtns.add('button',undefined,"Move Up");
-
 addMoveDelteBtns.but1.enabled = false;
 addMoveDelteBtns.but2 = addMoveDelteBtns.add('button',undefined,"Move Down");
 addMoveDelteBtns.but2.enabled = false;
@@ -1569,13 +1589,6 @@ fieldList.remove(fieldList.selection);
 triggerEnterCustomName = true;
 footerBtns.but1.enabled = true;
 loadCustom.et1.text = "Current Fields: New (click Save or Cancel)"
-/* HERE !!! need this?
-if(fieldList.selection > 0){
-footerBtns.but1.enabled = true;
-loadCustom.st1.text = "New (click Save)"
-}
-else{footerBtns.but1.enabled = false;}
-*/
 }
 
 // when addMoveDelteBtns.but4 is clicked, delete all items from fieldList
@@ -1668,6 +1681,7 @@ if(!(fileNameRegex.test(fieldList.items[0].text))){
 });
 // if lastViewedHeadersPanel exists, loadCustom.et1.text = lastViewedHeadersPanel; and load into list
 if (lastViewedHeadersPanel.length > 0){
+    exportBtn.enabled = true;
     loadCustom.et1.text = "Current Fields: "+lastViewedHeadersPanel
     // open the file
     var customFilePath = new File(appDataFwdSlash + plgnPrefs + plgnHeaders + "/" + lastViewedHeadersPanel + ".txt");
@@ -1693,63 +1707,100 @@ if (lastViewedHeadersPanel.length > 0){
         }
      }
     else{
+        exportBtn.enabled = false;
         loadCustom.et1.text = "Current Fields: UNDEFINED";
         customFileText = "{Schema_Field:'File-Name', Label:'File Name', Namespace:'file', XMP_Property:'file', XMP_Type:'file'}";
         }
     };
 
-// HERE!!! finish this
+// HERE!!! finish this - add all fields to new window?
 // when list item is clicked, Load it into the edit fields
 fieldList.onDoubleClick = function(){
    var sel = fieldList.selection.index
    var which = [fieldList.items[sel].text, fieldList.items[sel].subItems[0].text, fieldList.items[sel].subItems[1].text, fieldList.items[sel].subItems[2].text, fieldList.items[sel].subItems[3].text];
-// place the double clicked selection values to the 'Add' fields 
-/*
-    inputs.ddl1.removeAll()
-    inputs.ddl1.add ('item', fieldList.items[sel].text) 
-    inputs.ddl1.selection = 0; 
-    inputs.ddl1.enabled = false;
-    inputs.et1.text = fieldList.items[sel].subItems[0].text // HERE !!! Undefined inputs.ddl1.onChange line1500 inputs.et1.text = selectedFieldsArr[selectedIndex].Label;
-    inputs.et1.enabled = true;
-    inputs.et2.text = fieldList.items[sel].subItems[1].text
-    inputs.et2.enabled = false;
-    inputs.et3.text = fieldList.items[sel].subItems[2].text
-    inputs.et3.enabled = false;
-    for (var L3 = 0; L3 < xmpTypeArr.length; L3++){
-        if(fieldList.items[sel].subItems[3].text == xmpTypeArr[L3]){
-            var typeIndex= L3;
-            }
-        }
-    inputs.ddl2.selection = [typeIndex];
-    inputs.ddl2.enabled = false;
-*/
 // open a new window with the My Label value so it can be edited
 editFieldListItem = new Window('palette', "Edit Field Label");
-editFieldListItemLabel = editFieldListItem.add('statictext', undefined, "Enter a new Label")
-editFieldListItemLabel.alignment = 'left';
-editFieldListItemLabel.et = editFieldListItem.add('edittext', undefined, which[1])
-editFieldListItemLabel.et.alignment = 'left';
+editFieldListItem.spacing = 20;
+editFieldListItem.alignChildren = 'left';
+
+editFieldListItemG1 = editFieldListItem.add('group', undefined);
+editFieldListItemG1.orientation = 'column';
+editFieldListItemG1.alignChildren = 'left';
+editFieldListItemG1.spacing = 2;
+editFieldListItemLabel = editFieldListItemG1.add('statictext', undefined, "Field")
+editFieldListItemLabel.et = editFieldListItemG1.add('edittext', undefined, which[0])
 editFieldListItemLabel.et.preferredSize = [200,22]
+editFieldListItemLabel.et.enabled = false;
+
+editFieldListItemG2 = editFieldListItem.add('group', undefined);
+editFieldListItemG2.orientation = 'column';
+editFieldListItemG2.alignChildren = 'left';
+editFieldListItemG2.spacing = 2;
+editFieldListItemLabel = editFieldListItemG2.add('statictext', undefined, "My Label")
+editFieldListItemLabel.et = editFieldListItemG2.add('edittext', undefined, which[1])
+editFieldListItemLabel.et.preferredSize = [400,22]
+
+editFieldListItemG3 = editFieldListItem.add('group', undefined);
+editFieldListItemG3.orientation = 'column';
+editFieldListItemG3.alignChildren = 'left';
+editFieldListItemG3.spacing = 2;
+editFieldListItemNamespace = editFieldListItemG3.add('statictext', undefined, "Namespace")
+editFieldListItemNamespace.et = editFieldListItemG3.add('edittext', undefined, which[2])
+editFieldListItemNamespace.et.preferredSize = [400,22]
+
+editFieldListItemG4 = editFieldListItem.add('group', undefined);
+editFieldListItemG4.orientation = 'column';
+editFieldListItemG4.alignChildren = 'left';
+editFieldListItemG4.spacing = 2;
+editFieldListItemXMP_Property = editFieldListItemG4.add('statictext', undefined, "XMP_Property")
+editFieldListItemXMP_Property.et = editFieldListItemG4.add('edittext', undefined, which[3])
+editFieldListItemXMP_Property.et.preferredSize = [200,22]
+
+editFieldListItemG5 = editFieldListItem.add('group', undefined);
+editFieldListItemG5.orientation = 'column';
+editFieldListItemG5.alignChildren = 'left';
+editFieldListItemG5.spacing = 2;
+editFieldListItemXMP_Type = editFieldListItemG5.add('statictext', undefined, "XMP_Type")
+editFieldListItemXMP_Type.et = editFieldListItemG5.add('dropdownlist', undefined, xmpTypeArr)
+editFieldListItemXMP_Type.et.selection = xmpTypeArr.indexOf(which[4]);
+editFieldListItemXMP_Type.et.preferredSize = [100,22]
+
+editFieldListItemSpacer = editFieldListItem.add('statictext', undefined, "")
+
 editFieldListItemButtons = editFieldListItem.add('group', undefined);
 editFieldListItemButtons.orientation = 'row';
 editFieldListItemButtons.margins = [20,20,20,20];
+editFieldListItemButtons.alignment = 'right';
 editFieldListItemButtons.but1 = editFieldListItemButtons.add('button',undefined,"Save");
 editFieldListItemButtons.but1.preferredSize=[100,40];
 editFieldListItemButtons.but2 = editFieldListItemButtons.add('button',undefined,"Cancel");
 editFieldListItemButtons.but2.preferredSize=[100,40];
 
+if(which[0] == "Custom"){
+ //   editFieldListItemLabel.et.enabled = true;
+     editFieldListItemNamespace.et.enabled = true;
+    editFieldListItemXMP_Property.et.enabled = true;
+    editFieldListItemXMP_Type.et.enabled = true;
+    }
+else{
+       // editFieldListItemLabel.et.enabled = true;
+    editFieldListItemNamespace.et.enabled = false;
+    editFieldListItemXMP_Property.et.enabled = false;
+    editFieldListItemXMP_Type.et.enabled = false;
+    }
 editFieldListItemButtons.but1.onClick = function(){
 //whichOneObj.Label = editFieldListItemLabel.et.text
 //fieldList.add("item", "{Schema_Field:'"+whichOneObj.Schema_Field+"', Label:'"+editFieldListItemLabel.et.text+"', Namespace:'"+whichOneObj.Namespace+"', XMP_Property:'"+whichOneObj.XMP_Property+"', XMP_Type:'"+whichOneObj.XMP_Type+"'}", fieldList.selection.index+1);
         var newItem = fieldList.add("item",which[0],sel+1);
         newItem.subItems[0].text = editFieldListItemLabel.et.text;
-        newItem.subItems[1].text = which[2];
-        newItem.subItems[2].text = which[3];
-        newItem.subItems[3].text = which[4];
-fieldList.remove(fieldList.selection.index);
-editFieldListItem.hide();
-editFieldListItem.close();
-} // CLOSE editFieldListItemButtons.but1.onClick 
+        newItem.subItems[1].text = editFieldListItemNamespace.et.text;
+        newItem.subItems[2].text = editFieldListItemXMP_Property.et.text;
+        newItem.subItems[3].text =  editFieldListItemXMP_Type.et.selection.text;
+        fieldList.remove(fieldList.selection.index);
+        triggerEnterCustomName = true;
+        editFieldListItem.hide();
+        editFieldListItem.close();
+        } // CLOSE editFieldListItemButtons.but1.onClick 
 
 editFieldListItemButtons.but2.onClick = function(){
     editFieldListItem.hide(); editFieldListItem.close();
@@ -1775,7 +1826,7 @@ footerBtns.but2.preferredSize=[100,40];
 footerBtns.but2.onClick = function(){
     // because Cancel was clicked, revert fields to original values
     lastViewedHeadersPanel = originalLastViewedHeadersPanel;
-    fieldsTxt.text = "Fields: "+originalLastViewedHeadersPanel;
+    fieldsTxt.text = "Current Fields: "+originalLastViewedHeadersPanel;
     loadCustom.et1.text = "Current Fields: "+originalLastViewedHeadersPanel;
     customFileText = originalCustomFileText;
     // clear all existing items from fieldList  to be replaced with items from originalCustomFileText
@@ -1801,11 +1852,11 @@ footerBtns.but2.onClick = function(){
     mainWindow.enabled = true;
     }
 
-function saveCustomHeaders(){
+function saveCustomHeaders(){ // ! HERE when editing existing field (no add or delete) should this not require file name?
 // if list has been changed, require Name, else, don't require name
 if (triggerEnterCustomName == false){ 
     // change custom fields labels
-    fieldsTxt.text = "Fields: "+lastViewedHeadersPanel;
+    fieldsTxt.text = "Current Fields: "+lastViewedHeadersPanel;
     loadCustom.et1.text = "Current Fields: "+lastViewedHeadersPanel;
     fieldsWindow.hide();
   //  fieldsWindow.close(); // causes fieldsWindow to not re-open after Cancel, so MOVED to mainWindow.onClose()
@@ -1818,7 +1869,7 @@ var enterCustomName = new Window('dialog', "Save Custom Fields");
     enterCustomNameTitle.preferredSize = [280,22]
     enterCustomNameName = enterCustomName.add('edittext', undefined, "")
     enterCustomNameName.preferredSize = [200,22]
-   // enterCustomNameName.text = lastViewedHeadersPanel;
+    enterCustomNameName.text = lastViewedHeadersPanel;
     enterCustomNameButtons = enterCustomName.add('group', undefined)
     enterCustomNameOK = enterCustomNameButtons.add('button', undefined, "Save")
     enterCustomNameOK.preferredSize = [80,30]
@@ -1832,10 +1883,11 @@ var enterCustomName = new Window('dialog', "Save Custom Fields");
         enterCustomName.close();
         writeCustomHeadersToFile();
         // change custom fields label on main window
-        fieldsTxt.text = "Fields: "+lastViewedHeadersPanel;
+        fieldsTxt.text = "Current Fields: "+lastViewedHeadersPanel;
         loadCustom.et1.text = "Current Fields: "+lastViewedHeadersPanel;
         fieldsWindow.hide();
         mainWindow.enabled = true;
+         exportBtn.enabled = true;
         // fieldsWindow.close(); // causes fieldsWindow to not re-open after Cancel, so MOVED to mainWindow.onClose()    
         }
     else{alert("Give this custom field list a unique name so you ca find it later")}
@@ -1895,13 +1947,6 @@ fieldsWindow.onClose = function(){mainWindow.enabled = true;}
     expImp_thumbSelected = function(event) { // expImp_thumbSelected 
         if (event.object instanceof Document && event.type == "selectionsChanged" ) {
        // alert(app.document.presentationPath)
-           // TODO: test on Mac
-    if (Folder.fs == "Windows"){
-		var slash = "\\";
-		}
-	else{
-		var slash = "/";
-		}
         exportWhich.folderEt.text = app.document.presentationPath.split(slash).join("/")+"/";
         imageLoc.text = app.document.presentationPath.split(slash).join("/")+"/";
         // stops expImp_thumbSelected eventHandler
@@ -1952,6 +1997,9 @@ app.eventHandlers.push( {handler:expImp_thumbSelected} );
       //  var currentPath = app.document.visibleThumbnails[0].spec.toString()
   //  var currentPathToArray = app.document.visibleThumbnails[0].spec.toString().split("/")
   //  var currentFolder = currentPathToArray[currentPathToArray.length-2].split("%20").join("_")
+    // if the folder has file(s), get current folder name and path from Bridge workspace
+    /*
+// if the folder has file(s), get current folder name and path from Bridge workspace
     for (var L1x = 0; L1x < app.document.visibleThumbnails.length; L1x++) {
         if (app.document.visibleThumbnails[L1x].spec instanceof File){
         var currentPath = app.document.visibleThumbnails[L1x].spec.toString()
@@ -1963,7 +2011,47 @@ app.eventHandlers.push( {handler:expImp_thumbSelected} );
         var currentFolderPath = currentPath.substr(0,splicePathIndex1+1).split(" ").join("%20");          
         break;     
           }
+      else{
+       // if the folder has no files, get current folder name and path from Bridge workspace if (myFile instanceof File // get currentPath of first file found (not a folder)
+        var currentPath = app.document.visibleThumbnails[0].spec.toString()
+        var currentPathToArray = app.document.visibleThumbnails[0].spec.toString().split("/")
+        var currentFolder = currentPathToArray[currentPathToArray.length-2].split("%20").join("_")
+        // index of last "/" 		
+        var splicePathIndex1 = currentPath.lastIndexOf ("/")
+        // just the file directory
+        var currentFolderPath = currentPath.substr(0,splicePathIndex1+1).split(" ").join("%20"); 
+          }
         }
+ */   
+//just do this - who cares if  visibleThumbnails[0] is a folder or a file?
+/* PATH EDIT
+        var currentPath = app.document.visibleThumbnails[0].spec.toString()
+        var currentPathToArray = app.document.visibleThumbnails[0].spec.toString().split("/")
+        var currentFolder = currentPathToArray[currentPathToArray.length-2].split("%20").join("_")
+        // index of last "/" 		
+        var splicePathIndex1 = currentPath.lastIndexOf ("/")
+        // just the file directory
+        var currentFolderPath = currentPath.substr(0,splicePathIndex1+1).split(" ").join("%20"); 
+*/
+// HERE! change to presentatinPath? // PATH EDIT
+//var currentFolderPath = app.document.presentationPath.split("%20").join("_")
+//var currentPathToArray = app.document.presentationPath.split("\\")
+//var currentFolder = currentPathToArray[currentPathToArray.length-1].split("%20").join("_")
+var currentFolder = app.document.presentationPath
+/* replaced by above
+        var currentPath = app.document.visibleThumbnails[0].spec.fsName.toString()
+        var currentPathToArray = app.document.visibleThumbnails[0].spec.fsName.toString().split("\\")
+        var currentFolder = currentPathToArray[currentPathToArray.length-2].split("%20").join("_")
+        // index of last "/" 		
+        var splicePathIndex1 = currentPath.lastIndexOf ("\\")
+        // just the file directory
+        var currentFolderPath = currentPath.substr(0,splicePathIndex1+1).split(" ").join("%20");     
+
+$.writeln("currentFolder: "+ currentFolder)
+$.writeln("XcurrentFolder: "+ XcurrentFolder)
+$.writeln("currentFolderPath: "+ currentFolderPath)
+$.writeln("XcurrentFolderPath: "+ XcurrentFolderPath.split(" ").join("%20")+"\\")
+*/
 /* old method based on Browse return path
 // get folder name and path from exportWhich.folderEt.text (which the user selected by browsing
 var currentPathToArray = exportWhich.folderEt.text.split("/")
@@ -1973,6 +2061,7 @@ var splicePathIndex1 = exportWhich.folderEt.text.lastIndexOf ("/")
 // just the file directory
 var currentFolderPath = exportWhich.folderEt.text.substr(0,splicePathIndex1+1).split(" ").join("%20");    
 */
+
     if (Folder.fs == "Windows"){
          // var exportSaveLocation = desktop+"embedded_metadata_"+dateYMD+".txt";
         var exportSaveLocation = "~\\Desktop\\"+currentFolder+"_METADATA_"+dateYMD+".txt"; //   dateTime  OR dateYMD
@@ -2004,8 +2093,9 @@ var currentFolderPath = exportWhich.folderEt.text.substr(0,splicePathIndex1+1).s
 			var propFail = 0;
        if (dataExport){  
         var allFiles = [];
-        var selectedFolder = Folder(currentFolderPath) // Folder(exportWhich.folderEt.text.split(" ").join("%20")); 
-        var appDataPlgnSet = File (appDataFwdSlash + plgnPrefs + plgnOpt + plgnSet);
+        var selectedFolder = Folder(currentFolder) // was (currentFolderPath)// Folder(exportWhich.folderEt.text.split(" ").join("%20"));  // PATH EDIT    
+        var appDataPlgnSet = new File (appDataFwdSlash + plgnPrefs + plgnOpt + plgnSet);
+        appDataPlgnSet.encoding = "UTF8";
         appDataPlgnSet.open ("w", "TEXT", "ttxt");
         appDataPlgnSet.write (exportWhich.folderRb.value  + "|");
         appDataPlgnSet.write (exportWhich.subfoldersCb.value  + "|");  
@@ -2046,19 +2136,20 @@ var currentFolderPath = exportWhich.folderEt.text.substr(0,splicePathIndex1+1).s
 	// open selectedFolder and all subfolders an add the path of every file found to the 'allFiles' array. this will be the list of files to be exported
 	function getSubFolders(selectedFolder) {
 		 var allFilesList = selectedFolder.getFiles();
-		 for (var L1 = 0; L1 < allFilesList.length; L1++) {		 	 
-			  var myFile = allFilesList[L1];
-			  if (myFile instanceof Folder){
-				   getSubFolders(myFile);
-			  }
-			  else if (myFile instanceof File && testFileExtension(myFile) == true && testFilePrefix(myFile) == true) {
-				   allFiles.push(myFile); 
-				  }
-			 }  
-		}
+        if(allFilesList.length == 0){allFilesList = [selectedFolder]}
+                 for (var L1 = 0; L1 < allFilesList.length; L1++) {		 	 
+                      var myFile = allFilesList[L1];
+                      if (myFile instanceof Folder && myFile.getFiles().length > 0){ // only if folder has files (otherwise the loop stalls)
+                           getSubFolders(myFile);
+                      }
+                      else if (myFile instanceof File && testFileExtension(myFile) == true && testFilePrefix(myFile) == true) {
+                           allFiles.push(myFile);  
+                          }
+                     }  
+                }
 
 	// if "Include subfolders" is not checked, only read the files in the selected folder
-	if (exportWhich.subfoldersCb.value == false){
+	if (exportWhich.folderRb.value == true && exportWhich.subfoldersCb.value == false){
 		locateFilesProgress.show();
 		getFolder(selectedFolder);
 		locateFilesProgress.hide();
@@ -2066,7 +2157,7 @@ var currentFolderPath = exportWhich.folderEt.text.substr(0,splicePathIndex1+1).s
 		}
 
 	// if "Include subfolders" is checked, read all the files in the selected folder and its subfolders
-	if (exportWhich.subfoldersCb.value == true){
+	if (exportWhich.folderRb.value == true && exportWhich.subfoldersCb.value == true){
 		locateFilesProgress.show();
 		getSubFolders(selectedFolder);
 		locateFilesProgress.hide();
@@ -2075,11 +2166,12 @@ var currentFolderPath = exportWhich.folderEt.text.substr(0,splicePathIndex1+1).s
 
 	  if (exportWhich.folderRb.value == true) var Thumb = allFiles;
 	  if (exportWhich.fieldsArrRb.value == true) var Thumb = app.document.selections;
+
 			// progress bar window to show files are exporting
 			var exportProgress = new Window ("palette {text: ' " + plgnName + "  " + spot + "  (Exporting "+projectName2+" Data)', bounds: [0,0,500,30], X: Progressbar {bounds: [0,0,500,30]}};");
       // write UTF-8 BOM
       dataExport.write ("\uFEFF")
- 
+
  // convert fieldsArr item to object
  // TODO: reading from customFileText - is there a better way to do it?  if not, make sure customFileText is updated when loading a saved list or saving a new one (already working)
 var customFileArr = customFileText.split("\n")
@@ -2104,9 +2196,15 @@ for (var L1 = 0; L1 < customFileArr.length; L1++){
 				   exportProgress.center();
 				   exportProgress.show();
 				}
-			if (Thumb[L2]){
+             // start reading each file (Thumb)
+			if (Thumb[L2]){                  
              // get just the file name from allFiles so we can compare it to the file name in the text file
-			 var splicePathIndex = allFiles[L2].toString().lastIndexOf ("/")
+                if (exportWhich.folderRb.value == true){
+                    var splicePathIndex = allFiles[L2].fsName.toString().lastIndexOf ("\\");
+                    }
+                else{
+                    var splicePathIndex = Thumb[L2].spec.toString().lastIndexOf ("/");
+                    }
 			 /* // TODO: disabled becasue Mac requires ".lastIndexOf ("/")" the same as Windows - use new doubled version below?
 				 if (Folder.fs == 'Windows'){
 					var splicePathIndex = Thumb[L2].toString().lastIndexOf ("/")
@@ -2117,22 +2215,26 @@ for (var L1 = 0; L1 < customFileArr.length; L1++){
 					}
 				*/
 				// just the file directory
-				var spliceDirectory = allFiles[L2].toString().substr(0,splicePathIndex+1).split("%20").join(" ");   
+                if (exportWhich.folderRb.value == true){
+                    var spliceDirectory = allFiles[L2].fsName.toString().substr(0,splicePathIndex+1).split("%20").join(" ");  
+                    }
+                else{
+                    var spliceDirectory = Thumb[L2].spec.toString().substr(0,splicePathIndex+1).split("%20").join(" ").split("/").join("\\");
+                    }
 				// just the file name
-				if (exportWhich.folderRb.value == true) var spliceName = Thumb[L2].toString().slice(splicePathIndex+1).split("%20").join(" ");
-                  if (exportWhich.fieldsArrRb.value == true) var spliceName = Thumb[L2].name.split ("%20").join (' ');
-
+				if (exportWhich.folderRb.value == true) var spliceName = Thumb[L2].fsName.slice(splicePathIndex+1).split("%20").join(" ");
+                  if (exportWhich.fieldsArrRb.value == true) var spliceName = Thumb[L2].name.split ("%20").join (' '); // was fsName
 				// overall try/catch for each image. If read passes, 1 is added to filePass variable. If read fails, catch error adds 1 to fileFail variable  and file name to fileFailArr
 				try
 				{		
 				  // Get the file
 				  if (exportWhich.folderRb.value == true) var singleFile = Thumb[L2];
-				  if (exportWhich.fieldsArrRb.value == true) var  singleFile = Thumb[L2].spec;
+				  if (exportWhich.fieldsArrRb.value == true) var  singleFile = Thumb[L2].spec;                  
                   // Create an XMPFile
                   // try to open file. if it fails, save file path in error log
                     try{
                     // if file is an .xmp sidecar - read the xmp directly to an XMPMeta Object
-                    if( singleFile.name.match(/\.xmp/i) != null){
+                    if( singleFile.toString().match(/\.xmp/i) != null){ // PATH EDIT, removed .name
                         var xmpFile = Folder (File(singleFile.fsName)); 
                         xmpFile.open('r')
 					xmpFile.encoding = "UTF8";	
@@ -2141,10 +2243,11 @@ for (var L1 = 0; L1 < customFileArr.length; L1++){
                         }
                     else{
                         // if file is not an .xmp sidecar pull XMP from file
+
                         var xmpFile = new XMPFile(singleFile.fsName, XMPConst.UNKNOWN, XMPConst.OPEN_FOR_READ);
 					 xmpFile.encoding = "UTF8 BOM";
                         // convert to xmp
-                        var xmpData = xmpFile.getXMP();
+                        var xmpData = xmpFile.getXMP();                   
                         }
                     }
                     catch(couldNotOpenError){}
@@ -2161,20 +2264,19 @@ for (var L1 = 0; L1 < customFileArr.length; L1++){
 				// write return to start file properties
 				dataExport.write ('\r');
 				// Export image file name
-				dataExport.write (spliceName);
-				// Export file directory  MOVED DOWN
-              //  dataExport.write ('\t' + spliceDirectory);
-               
+				dataExport.write (spliceName);   
+          
 // Run export functions based on XMP_Type
-for (var L1 = 0; L1 < fieldsArr.length; L1++){
+for (var L1 = 0; L1 < fieldsArr.length; L1++){      
     // if File-Folder is included in custom fields list, export file directory TODO: test when folder isn't included and subfolder import
     if(fieldsArr[L1].Schema_Field == 'File-Folder'){
         try{   
             dataExport.write ('\t' + spliceDirectory);
+         //   dataExport.write ('\t' + currentFolder+"\\"); // doesn't write subfolder
             } // end try
         catch(propFail){propFail++}
         }
-	if(fieldsArr[L1].XMP_Type == 'text' || fieldsArr[L1].XMP_Type == 'boolean'){
+	if(fieldsArr[L1].XMP_Type == 'text' || fieldsArr[L1].XMP_Type == 'boolean'){  
 		try{   
 //var firstColonIndex = fieldsArr[L1].XMP_Property.indexOf(":")
 var path = fieldsArr[L1].XMP_Property.slice(fieldsArr[L1].XMP_Property.indexOf(":")+1)
@@ -2216,6 +2318,9 @@ var path = fieldsArr[L1].XMP_Property.slice(fieldsArr[L1].XMP_Property.indexOf("
 //var path = fieldsArr[L1].XMP_Property.slice(firstColonIndex+1)
 var path = fieldsArr[L1].XMP_Property.slice(fieldsArr[L1].XMP_Property.indexOf(":")+1)
                 var count = xmpData.countArrayItems(fieldsArr[L1].Namespace, path);
+// TEST    var language = xmpData.getQualifier(XMPConst.NS_DC, 'description[1]', XMPConst.NS_XML, 'lang')
+ // TEST   $.writeln("language: "+language)
+                // XMPMetaObj.getQualifier(schemaNS, structName, qualNS, qualName)
                     var arString = "";
                      if(count > 0){   
                         for(var L1a = 1;L1a <= count;L1a++){
@@ -2236,7 +2341,8 @@ var path = fieldsArr[L1].XMP_Property.slice(fieldsArr[L1].XMP_Property.indexOf("
                             }
                         }	
 			catch(propFail){propFail++}          
-			}	
+			}
+   
 // File properties 
     // Image File Created Date
     if(fieldsArr[L1].Schema_Field == 'File-Date Created'){
@@ -2387,6 +2493,7 @@ var path = fieldsArr[L1].XMP_Property.slice(fieldsArr[L1].XMP_Property.indexOf("
 	}
 
 	} // end
+
 // File properties     
  // exportText (XMPConst.NS_DC, "format");   // TODO: find way to read directly from file
         /*
@@ -2410,11 +2517,19 @@ var path = fieldsArr[L1].XMP_Property.slice(fieldsArr[L1].XMP_Property.indexOf("
 				{
 
           */
+      
 					// fail check  
 				  if (propFail == 0)
 						{
 							filePass++;
 						}
+                     // if file is not supported, add to propFail so filePass is not triggered  
+                    //  if (testFileExtension(Thumb[L2]) == false) //   HERE! changed because it was failing on selectedThumnails
+                      if (testFileExtension(singleFile) == false)
+                      {
+                          fileFail++
+                          filePass--
+                          }      
 					} // End of overall try/catch for each image
 				
 				// outer fail check
@@ -2451,17 +2566,37 @@ var path = fieldsArr[L1].XMP_Property.slice(fieldsArr[L1].XMP_Property.indexOf("
 		exportProgress.hide(); 
         exportProgress.close(); 
 		// Show report that extraction is complete with directory path of .txt file
-		var textFilePath = dataExport.toString().split ("%20").join (" ").split("/").join ("\\");
-		var complete = new Window("dialog", "Export Complete");
+        var complete = new Window("dialog", "Export Complete");
+        var textFilePath = "";
+        if(filePass == 0){
+            textFilePath = dataExport.toString().split ("%20").join (" ").split("/").join ("\\"); // "Compatible files: ai, avi, bmp, dng, flv, gif, indd, indt, jpg, mp2, mp3, mp4, mov, pdf, png, psd, swf, tiff, wav, wma, wmv, xmp"
+            }
+        else{
+            textFilePath = dataExport.toString().split ("%20").join (" ").split("/").join ("\\");
+            }
+        var completeHeaderText = "";
+        if(filePass == 0){
+            completeHeaderText = "Something when wrong";
+            }
+        else{
+            completeHeaderText = "Success!";
+            }
+        var completeMsgText = "";
+        if(filePass == 0){
+            completeMsgText = filePass+" files exported.  Export file saved to:"; // No compatible files were found in the selected folder(s)
+            }
+        else{
+            completeMsgText = filePass+" files exported.  Export file saved to:";  // "Metadata has been exported from "+filePass+" files and saved to:"
+            }
         complete.spacing = 3;
 		complete.alignChildren = 'center';		
-		complete.header = complete.add('statictext', undefined, "Success!");
-        complete.header .alignment = 'fill'
-        complete.header .justify = 'center'
-		complete.msg1 = complete.add('statictext', undefined, "Data has been Exported from "+filePass+" images and saved to:");
+		complete.header = complete.add('statictext', undefined, completeHeaderText);
+        complete.header.alignment = 'fill'
+        complete.header.justify = 'center'
+		complete.msg1 = complete.add('statictext', undefined, completeMsgText);
 		complete.msg1.preferredSize = [400, 20]
 		complete.msg1.justify = 'center';
-		complete.msg2= complete.add('statictext', undefined, textFilePath, {multiline:true});
+		complete.msg2= complete.add('statictext', undefined, exportSaveLocation, {multiline:true}); // PATH EDIT
 		complete.msg2.preferredSize = [400,100];
 		complete.msg2.justify = 'center';
 		// begin problems
@@ -2494,9 +2629,20 @@ var path = fieldsArr[L1].XMP_Property.slice(fieldsArr[L1].XMP_Property.indexOf("
 			complete.hide();
 			}
 			} // close export brace 1
-		complete.show();		
+		complete.show();
+
+		if(filePass == 0)
+            {             
+                dataExport.write("\n\n\nNo compatible files were found.\n\nMetadata can be exported from these files: ai, avi, bmp, dng, flv, gif, indd, indt, jpg, mp2, mp3, mp4, mov, pdf, png, psd, swf, tiff, wav, wma, wmv, xmp");
+                }
 		// Close the exported .txt file
 		dataExport.close();
+        /* TODO: if no files were exported, delete dataExport file - could be dangerous if dataExport has the same filename as a previous good export
+        if(filePass == 0)
+            {
+                dataExport.remove();
+                }
+            */
 		}  // close "function exportToFile(){"
     
 
@@ -2504,7 +2650,8 @@ var path = fieldsArr[L1].XMP_Property.slice(fieldsArr[L1].XMP_Property.indexOf("
 
 //////////////////////////////////////////////////////////////// BEGINNING OF IMPORT FUNCTIONS ////////////////////////////////////////////////////////////////
 function importFromFile(){
-        var appDataPlgnSet = File (appDataFwdSlash + plgnPrefs + plgnOpt + plgnSet);
+        var appDataPlgnSet = new File (appDataFwdSlash + plgnPrefs + plgnOpt + plgnSet);
+        appDataPlgnSet.encoding = "UTF8";
         appDataPlgnSet.open ("w", "TEXT", "ttxt");
         appDataPlgnSet.write (exportWhich.folderRb.value  + "|");
         appDataPlgnSet.write (exportWhich.subfoldersCb.value  + "|");  
@@ -2552,20 +2699,35 @@ function importFromFile(){
 		var allFiles = [];
 		
         // get currentPath
-
     for (var L1x = 0; L1x < app.document.visibleThumbnails.length; L1x++) {
         if (app.document.visibleThumbnails[L1x].spec instanceof File){
-        var currentPath = app.document.visibleThumbnails[L1x].spec.toString()
-        var currentPathToArray = app.document.visibleThumbnails[L1x].spec.toString().split("/")
-        var currentFolder = currentPathToArray[currentPathToArray.length-2].split("%20").join("_")
-// index of last "/" 		
-var splicePathIndex1 = currentPath.lastIndexOf ("/")
-// just the file directory
-var currentFolderPath = currentPath.substr(0,splicePathIndex1+1).split(" ").join("%20");          
+// HERE! change to presentationPath? // PATH EDIT
+//var XXcurrentFolderPath = app.document.presentationPath.split("%20").join("_") // split(" ").join("%20").split(slash).join("/")+"/";
+//var XXcurrentFolderPath = app.document.presentationPath.split(" ").join("%20").split(slash).join("/")+"/";
+//var XXcurrentFolderPath = app.document.presentationPath
+
+//var XXcurrentPathToArray = app.document.presentationPath.split("\\")
+//var XXcurrentFolder = XXcurrentPathToArray[XXcurrentPathToArray.length-1].split("%20").join("_")
+/* replaced by above
+    
+    */
+     //   var currentPath = app.document.visibleThumbnails[L1x].spec.toString()
+     //   var currentPathToArray = app.document.visibleThumbnails[L1x].spec.toString().split("/")
+     //   var currentFolder = currentPathToArray[currentPathToArray.length-2].split("%20").join("_")
+        // index of last "/" 		
+     //   var splicePathIndex1 = currentPath.lastIndexOf ("/")
+        // just the file directory
+      //  var currentFolderPath = currentPath.substr(0,splicePathIndex1+1).split(" ").join("%20");   
+        var currentFolderPath = app.document.presentationPath;  // PATH EDIT
+        
+//$.writeln("currentFolderPath: "+currentFolderPath)
+//$.writeln("XXcurrentFolderPath: "+XXcurrentFolderPath)
         break;     
           }
         }
     var selectedFolder = Folder(currentFolderPath);
+//$.writeln("selectedFolder: "+selectedFolder)
+//$.writeln("XXselectedFolder: "+Folder(XXcurrentFolderPath))
 /*TEST - show window with list of all file names in the import text file
 var textFileNameArr = [];
             for (var L1 = 0; L1 < textFile.length; L1++) {
@@ -2582,30 +2744,30 @@ var textFileNameArr = [];
 		testMessage.preferredSize = [300,500];
 		testMessage.text = textFileNameArr.join('\n')
 		testWindow.show()
-*/	
-		
+*/			
 		//  TODO: create report on which fields were and were not in the text file
 		// open selectedFolder add the path of every file found to the 'allFiles' array. this will be the list of files to be exported
 		function getFolder(selectedFolder) {
-			var allFilesList = selectedFolder.getFiles();	 
+			var allFilesList = selectedFolder.getFiles();	
 			for (var L1 = 0; L1 < allFilesList.length; L1++) {
-				var myFile = allFilesList[L1];
+				var myFile = allFilesList[L1]
 				if (myFile instanceof File && testFileExtension(myFile) == true && testFilePrefix(myFile) == true) {
-					allFiles.push(myFile); 
-					}
-				}
+					allFiles.push(myFile.fsName); // PATH EDIT); 
+ // $.writeln("IMPORT: "+myFile.fsName) // .toString().split(" ").join("%20").split(slash).join("/")
+					}             
+				}  
 			}
 	
 		// open selectedFolder and all subfolders and add the path of every file found to the 'allFiles' array. this will be the list of files to be exported
 		function getSubFolders(selectedFolder) {
-			 var allFilesList = selectedFolder.getFiles();		 
+			 var allFilesList = selectedFolder.getFiles();	
 			 for (var L1 = 0; L1 < allFilesList.length; L1++) {
 				  var myFile = allFilesList[L1];
-				  if (myFile instanceof Folder){
+				  if (myFile instanceof Folder  && myFile.getFiles().length > 0){ // only if folder has files (otherwise the loop stalls)
 					   getSubFolders(myFile);
 				  }
 				  if (myFile instanceof File && testFileExtension(myFile) == true && testFilePrefix(myFile) == true) {
-					   allFiles.push(myFile); 
+					   allFiles.push(myFile.fsName); // PATH EDIT);                 
 				  }
 			 }	
 		}
@@ -2917,7 +3079,7 @@ var textFileNameArr = [];
 				  importingProgress.center();
 				  importingProgress.show();
 			 }
-
+  
       //   if (allFiles[L3].hasMetadata)       
 		 if (allFiles[L3]){         
 		// Get the selected file
@@ -2926,20 +3088,20 @@ var textFileNameArr = [];
  // try to open file. if it fails, save file path in error log
 try{
     // if file is an .xmp sidecar - read the xmp directly to an XMPMeta Object
-    if(imageFile.name.match(/\.xmp/i) != null){
-        var xmpFile = Folder (File(imageFile.fsName)); 
+    if(imageFile.toString().match(/\.xmp/i) != null){  // PATH EDIT removed .fsName
+        var xmpFile = Folder (File(imageFile));  // PATH EDIT removed .fsName
         xmpFile.open('r');  
         var xmpData = new XMPMeta(xmpFile.read());  
           xmpFile.close();  
-        }
-    else{
+        }   
+    else{ 
         // if file is not an .xmp sidecar pull XMP from file
-        var xmpFile = new XMPFile(imageFile.fsName, XMPConst.UNKNOWN, XMPConst.OPEN_FOR_UPDATE);
+        var xmpFile = new XMPFile(imageFile, XMPConst.UNKNOWN, XMPConst.OPEN_FOR_UPDATE); // PATH EDIT removed .fsName
         // convert to xmp
         var xmpData = xmpFile.getXMP();
-        }
+        }                   
     }
-catch(couldNotOpenError){}       
+catch(couldNotOpenError){}      
  // convert fieldsArr item to object
  // TODO: reading from customFileText - is there a better way to do it?  if not, make sure customFileText is updated when loading a saved list or saving a new one (already working)
 var customFileArr = customFileText.split("\n")
@@ -2952,19 +3114,20 @@ for (var L1 = 0; L1 < customFileArr.length; L1++){
 				// delete label before import begins  Data imported
 				var prop = xmpData.getProperty (XMPConst.NS_XMP, "Label");		
 				var patt1=new RegExp(""+projectName1+" metadata imported"); 	
-			
+	   		                  		
 				if (patt1.test(prop) == true){				
 					xmpData.deleteProperty (XMPConst.NS_XMP, 'Label');	
 					} 
 				// get just the file name from allFiles so we can compare it to the file name in the text file
 				 if (Folder.fs == 'Windows'){
-					var splicePathIndex = allFiles[L3].toString().lastIndexOf ("/")
+
+					var splicePathIndex = allFiles[L3].toString().lastIndexOf ("\\") // PATH EDIT changed to "\\"
 					}
 				else{
 					var splicePathIndex = allFiles[L3].toString().lastIndexOf ("\\")
                        var splicePathIndex = allFiles[L3].toString().lastIndexOf ("/")
 					}
-				
+		
 				// get just the file directory
 				var spliceDirectory = allFiles[L3].toString().slice(splicePathIndex+1).split("%20").join(" ");
 				// get just the file name
@@ -2980,17 +3143,19 @@ for (var L1 = 0; L1 < customFileArr.length; L1++){
                         var impFileName = textFileValue[0].split ('.');
                         impFileName.pop();
                         var impFileName = impFileName.join ('.');	
-                        }         					 
+                        }    
+     					 
                 // if image file name matches the filename in the the first position of the text file array
                 else{
                     var thumbName= spliceName;
                     var impFileName = textFileValue[0];
                     }       
-             
+  	    
     if(dataSourceOptions.Path.value == true){  
-        var thumbName = allFiles[L3];
+        var thumbName = allFiles[L3].split(" ").join("%20");
         var impFileName = textFileValue[1].split(" ").join("%20")+textFileValue[0].split(" ").join("%20");
         }         
+
 // TODO: is .toLowerCase() neccessary for a match?
                  if (thumbName == impFileName){						 
 	        	// get the array index of the specified header string
@@ -3000,7 +3165,7 @@ for (var L1 = 0; L1 < customFileArr.length; L1++){
 					return -1;  
 					}  
                 }
-	  
+
  // remove extra " from CSV formatting
  function parseCSV(str) {  // TODO: needed?
     var arr = [];
@@ -3025,6 +3190,7 @@ for (var L1 = 0; L1 < customFileArr.length; L1++){
         arr[row][col] += cc;
     }
   val = arr
+  
    // return arr; 
 }
 
@@ -3123,13 +3289,13 @@ var val = val.toString().split("(LF)").join("\n").split("(CR)").join("\r").split
 													 xmpData.deleteProperty(fieldsArr[L7].Namespace, path);  
 													 if (textFileValue[index].length > 0){
 													 xmpData.appendArrayItem (fieldsArr[L7].Namespace, path, val, 0, XMPConst.ALIAS_TO_ALT_TEXT);
-													xmpData.setQualifier    (fieldsArr[L7].Namespace, path + '[1]', NS_W3, "lang", "x-default");
+													xmpData.setQualifier    (fieldsArr[L7].Namespace, path + '[1]', XMPConst.NS_XML, "lang", "x-default");
 													}
 												}
 												else
 													 if (count == 0 && textFileValue[index].length > 0){
 														  xmpData.appendArrayItem (fieldsArr[L7].Namespace, path, val, 0, XMPConst.ALIAS_TO_ALT_TEXT);
-														  xmpData.setQualifier (fieldsArr[L7].Namespace, path + '[1]', NS_W3, "lang", "x-default");
+														  xmpData.setQualifier (fieldsArr[L7].Namespace, path + '[1]', XMPConst.NS_XML, "lang", "x-default");
 													 }
 									if (writeOptions.overwriteRb.value == true){
 											}
@@ -3232,12 +3398,12 @@ for (var L9 = 0; L9 < fieldsArr.length; L9++){
   else{
       filePass++;
       }
-     
+
 // Write save file and close	
 try{
 // todo - write .xmp differently
 // if file is an .xmp sidecar - read the xmp directly to an XMPMeta Object
-if(imageFile.name.match(/\.xmp/i) != null){
+if(imageFile.toString().match(/\.xmp/i) != null){  // PATH EDIT, removed .name
   /*
 xmpFile.open('w'); 
 xmpFile.close()
@@ -3246,7 +3412,7 @@ xmpFile.open('w')
 xmpFile.write(xmpData.serialize(XMPConst.SERIALIZE_OMIT_PACKET_WRAPPER));
 xmpFile.close()
     }
-else{     
+else{  
     if (xmpFile.canPutXMP(xmpData)) {
         xmpFile.putXMP(xmpData);
         }
