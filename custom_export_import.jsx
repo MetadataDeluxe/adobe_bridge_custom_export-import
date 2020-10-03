@@ -1,4 +1,4 @@
-﻿#target bridge-10
+﻿#target bridge
 
 if (BridgeTalk.appName == 'bridge')
 
@@ -24,11 +24,11 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING OUT OF O
 SOFTWARE.
 */
 
-// Change these to make the scprit yours
-var projectName1 = "Custom Metadata" // human friendly
-var projectName2 = "Custom_Metadata" // computer friendly.  filenames - don't use spaces, use camelCase or _ or -
+// Change these to make the script yours
+var projectName1 = "Metadata Deluxe" // human friendly
+var projectName2 = "Metadata_Deluxe" // computer friendly.  filenames - don't use spaces, use camelCase or _ or -
 var plgnVers = "1.0";
-var codeVers = "2020-10-01"
+var codeVers = "2020-10-03"
         
 { // brace 1 open
 
@@ -37,7 +37,7 @@ var findProjectMenu = MenuElement.find (projectName2);
 if (findProjectMenu == null){
 	 var projectMenu = new MenuElement ('menu', projectName1, 'before Help', projectName2);
 	}
-var projectName2ExpImp = new MenuElement ('command', "Metadata Export-Import", 'at the beginning of '+projectName2);
+var projectName2ExpImp = new MenuElement ('command', "Custom Metadata Export-Import", 'at the beginning of '+projectName2);
 projectName2ExpImp.onSelect = function()
 
 	{ // brace 2 open
@@ -52,14 +52,13 @@ projectName2ExpImp.onSelect = function()
           var libfile = new File( pathToXMPLib );
           var xmpLib = new ExternalObject("lib:" + pathToXMPLib );
 		}
-// !!! IN PROGRESS different way to identify user prefs folder
+// TODO different way to identify user prefs folder
 var userF = Folder.userData; //User library
 var scriptf = File($.fileName); //script name (only works when you run from StartupScripts, not debuggung in ESTK))
 var scriptfo = scriptf.parent; //parent folder of script
 var loc = scriptfo + '/images/'; //images folder
 var UPprefsPath = ''; //path to preferences file
 var UPprefsVersion = '2.0.9'; //always increment with preference file changes
-  
 // $.writeln(scriptf)
 // $.writeln(scriptfo)     
         
@@ -194,26 +193,26 @@ var UPprefsVersion = '2.0.9'; //always increment with preference file changes
         var textSize1 = [550,20]
         var spcr1=[0,0,40,20];
         var dim08=[0,0,80,25];
-var dim1=[0,0,100,25];
-var dim2=[0,0,200,25];
-var dim3=[0,0,300,25];
-var dim4=[0,0,400,25];
-var dim5=[0,0,500,25];
-var dimC=[0,0,100,200];
-var dimL = [0,0,1080,450];
+        var dim1=[0,0,100,25];
+        var dim2=[0,0,200,25];
+        var dim3=[0,0,300,25];
+        var dim4=[0,0,400,25];
+        var dim5=[0,0,500,25];
+        var dimC=[0,0,100,200];
+        var dimL = [0,0,1080,450];
         }
     else{
         var buttonSize1 = [34,34];
      //   var buttonSize3 = [100,34]
         var textSize1 = [560,20]
         var dim08=[0,0,80,25];
-var dim1=[0,0,100,25];
-var dim2=[0,0,200,25];
-var dim3=[0,0,300,25];
-var dim4=[0,0,400,25];
-var dim5=[0,0,500,25];
-var dimC=[0,0,100,200];
-var dimL = [0,0,1000,450];
+        var dim1=[0,0,100,25];
+        var dim2=[0,0,200,25];
+        var dim3=[0,0,300,25];
+        var dim4=[0,0,400,25];
+        var dim5=[0,0,500,25];
+        var dimC=[0,0,100,200];
+        var dimL = [0,0,1000,450];
         }
 
 	var exportImageFolderOK = false;
@@ -322,7 +321,6 @@ var dimL = [0,0,1000,450];
 		exportWhich.folderEt.helpTip = imageFolderPath;
 
 		exportWhich.subfoldersCb = exportWhich.subfoldersGr.add('checkbox', undefined, "include subfolders");		
-// TODO: remove everything associated with exportWhich.folderGr
       
         // Panel for options
          exportOptionsGrp = exportPanel.add('group', un, un);
@@ -387,12 +385,10 @@ var dimL = [0,0,1000,450];
 		function toggleExportWhich(){
 			if (exportChoice == "thumbs"){
 				exportWhich.subfoldersGr.visible = false;
-			//	exportWhich.folderGr.visible = false;
                   exportBtn.enabled = true;
 				}
 			else{
 				exportWhich.subfoldersGr.visible = true;
-				//exportWhich.folderGr.visible = true;
                   toggleExportBtn;
 				}
               }
@@ -906,7 +902,7 @@ if (customFilePath.exists == true){ // !!! if "- Select Custom -"
         }
     }
 else{
-    // HERE! load Basic fields if customFilePath.exists == false ?
+    // TODO load Basic fields if customFilePath.exists == false ?
     fieldsTxt.text = "Fields: UNDEFINED"
     };
   
@@ -958,13 +954,13 @@ else{
         editFieldsPromptSpcr1 = editFieldsPrompt.add('statictext', undefined, "");
         editFieldsPromptSpcr1.minimumSize = [10,80];
 
-        editFieldsPromptSt1 = editFieldsPrompt.add('statictext', undefined, "There are no fields defined for Export/Import\n\nBegin by adding items to the Fields List", {multiline:true})
+        editFieldsPromptSt1 = editFieldsPrompt.add('statictext', undefined, "There are no fields defined for Export/Import\n\nBegin by customizing the Fields List", {multiline:true})
         editFieldsPromptSt1.minimumSize = [500,30];
         editFieldsPromptSt1.justify = 'center';
         editFieldsPromptSt1.graphics.font = ScriptUI.newFont ("Arial", "Bold", 16);
         editFieldsPromptSt1.graphics.foregroundColor = editFieldsPromptSt1.graphics.newPen (editFieldsPromptSt1.graphics.PenType.SOLID_COLOR, [1,0.58,0], 1);
 
-        editFieldsPromptCancelBtn = editFieldsPrompt.add('button', undefined, "Edit Fields");
+        editFieldsPromptCancelBtn = editFieldsPrompt.add('button', undefined, "Customize Fields List");
         editFieldsPromptCancelBtn.preferredSize = [120,30]
         editFieldsPromptCancelBtn.onClick =  function(){ 
             editFieldsPrompt.hide();
@@ -989,7 +985,6 @@ var basicFieldsArr = [
 ];
 
 var fileFieldsArr = [
-{Schema_Field:'File-Name', Label:'File Name', Namespace:'file', XMP_Property:'file', XMP_Type:'file'},
 {Schema_Field:'File-Folder', Label:'File Folder', Namespace:'file', XMP_Property:'file', XMP_Type:'file'},
 {Schema_Field:'File-Date Created', Label:'Date File Created', Namespace:'file', XMP_Property:'file', XMP_Type:'file'},
 {Schema_Field:'File-Date Modified', Label:'Date File Modified', Namespace:'file', XMP_Property:'file', XMP_Type:'file'},
@@ -1010,6 +1005,7 @@ var fileFieldsArr = [
 ];
 
 var iptcFieldsArr = [
+{Schema_Field:'File-Folder', Label:'File Folder', Namespace:'file', XMP_Property:'file', XMP_Type:'file'},
 {Schema_Field:'IPTC-Creator', Label:'Creator', Namespace:'http://purl.org/dc/elements/1.1/', XMP_Property:'dc:creator', XMP_Type:'seq'},
 {Schema_Field:'IPTC-Creator-Job Title', Label:'Creator-Job Title', Namespace:'http://ns.adobe.com/photoshop/1.0/', XMP_Property:'photoshop:AuthorsPosition', XMP_Type:'text'},
 {Schema_Field:'IPTC-Creator-Address', Label:'Creator-Address', Namespace:'http://iptc.org/std/Iptc4xmpCore/1.0/xmlns/', XMP_Property:'Iptc4xmpCore:CreatorContactInfo/Iptc4xmpCore:CiAdrExtadr', XMP_Type:'text'},
@@ -1043,6 +1039,7 @@ var iptcFieldsArr = [
 ];
 
 var dcFieldsArr = [
+{Schema_Field:'File-Folder', Label:'File Folder', Namespace:'file', XMP_Property:'file', XMP_Type:'file'},
 {Schema_Field:'DC-Contributor', Label:'Contributor', Namespace:'http://purl.org/dc/elements/1.1/', XMP_Property:'dc:contributor', XMP_Type:'bag'},
 {Schema_Field:'DC-Coverage', Label:'Coverage', Namespace:'http://purl.org/dc/elements/1.1/', XMP_Property:'dc:coverage', XMP_Type:'text'},
 {Schema_Field:'DC-Creator', Label:'Creator', Namespace:'http://purl.org/dc/elements/1.1/', XMP_Property:'dc:creator', XMP_Type:'seq'},
@@ -1062,6 +1059,7 @@ var dcFieldsArr = [
 
 var plusPrefix = 'plus';
 var vraFieldsArr = [
+{Schema_Field:'File-Folder', Label:'File Folder', Namespace:'file', XMP_Property:'file', XMP_Type:'file'},
 {Schema_Field:'VRA-Work Agent', Label:'Work Agent', Namespace:'http://www.vraweb.org/vracore/4.0/essential/', XMP_Property:'vrae:work.agent', XMP_Type:'text'},
 {Schema_Field:'VRA-Work Title', Label:'Work Title', Namespace:'http://www.vraweb.org/vracore/4.0/essential/', XMP_Property:'vrae:work.title', XMP_Type:'text'},
 {Schema_Field:'VRA-Work Date', Label:'Work Date', Namespace:'http://www.vraweb.org/vracore/4.0/essential/', XMP_Property:'vrae:work.date', XMP_Type:'text'},
@@ -1222,14 +1220,14 @@ function showLoadCustomInst(){
 	   var loadCustomInst = new Window('palette', "Current Fields Instructions");
 	   var loadCustomInstBody =
             "Orange text is the name of the currently loaded field list.\n"+
-            "   'Undefined' means you have no list loaded, so you need to create one.\n"+
-            "Change\n"+
+            "   'UNDEFINED' means you have no list loaded, so you need to create one.\n\n"+
+            "Change button\n"+
 			"   Select a previously saved mapping and it will be loaded (view the mapping below).\n"+
 			"   Click Save to export/import using the mapping.\n"+
              "   You can edit the loaded mapping and Save (you will be prompted to name it).\n\n"+ 
-			"Manage\n"+	
+			"Manage button\n"+	
 			"   See all of your previously saved mapping files.\n"+
-			"   Mapping files are text files and can be deleted, copied, and edited.\n"+
+			"   Mapping files are text (.txt) files and can be deleted, copied, and edited.\n"+
 			"   Edit a mapping in a text editor\n"+
              "   Mapping must follow the same format:\n\n"+
              "{Schema_Field:'IPTC-Creator', Label:'Creator', Namespace:'http://purl.org/dc/elements/1.1/', XMP_Property:'dc:creator', XMP_Type:'seq'},"
@@ -1304,7 +1302,7 @@ fieldInput.orientation = "column";
 fieldInput.spacing = 0;
 // where the user selects and customizes  fields
 var fieldInputLabelGrp = fieldInput.add("group");
-var fieldInputLabel = fieldInputLabelGrp.add("statictext", dim1, "Edit Fields");
+var fieldInputLabel = fieldInputLabelGrp.add("statictext", dim1, "Customize");
 fieldInputLabel.alignment = "left";
 fieldInputLabel.graphics.font = ScriptUI.newFont ("Arial", 'BOLD', 14)
 
@@ -1314,13 +1312,13 @@ editCustomHelp.preferredSize = buttonSize1
 editCustomHelp.helpTip = clickInstrucTT;
 editCustomHelp.onClick = showEditCustomHelp
 function showEditCustomHelp (){
-var editCustomInst = new Window('palette', "Edit Fields Instructions");
+var editCustomInst = new Window('palette', "Customize Fields Instructions");
 var editCustomInstBody =
-        "To load fields from a standard schema (File, IPTC Core, Dublin Core, VRA Core:\n"+
+        "Load standard schema fields\n"+
         "   Select a schema to add all its fields to your list\n"+
         "      You can edit your list after it loads\n\n"+
         "Add a field to your list\n"+
-        "   Schema: select one (File, IPTC Core, Dublin Core, VRA Core, Custom)\n"+
+        "   Schema: select a schema\n"+
         "   Field: select a field from the schema\n"+
         "      Change the Label (optional)\n"+
         "      Click 'Add' to insert the field to the end of your list\n"+
@@ -1366,7 +1364,8 @@ loadSchema.dd1 = loadSchema.grp1.add("dropdownlist", dim2, ["","File","Basic","I
 
 loadSchema.dd1.onChange=function(){
   var fileNameRegex = /File-Name/;
-    if(loadSchema.dd1.selection.text != "File" && !(fileNameRegex.test(fieldList.items[0]))){
+   // if(loadSchema.dd1.selection.text != "File" && !(fileNameRegex.test(fieldList.items[0]))){
+        if(!(fileNameRegex.test(fieldList.items[0]))){
         var newItem = fieldList.add("item", 'File-Name');
         newItem.subItems[0].text = 'File Name';
         newItem.subItems[1].text = 'file';
@@ -1707,19 +1706,19 @@ if (lastViewedHeadersPanel.length > 0){
         }
      }
     else{
+        loadCustom.but1.enabled = false;
+        loadCustom.but2.enabled = false;        
         exportBtn.enabled = false;
         loadCustom.et1.text = "Current Fields: UNDEFINED";
         customFileText = "{Schema_Field:'File-Name', Label:'File Name', Namespace:'file', XMP_Property:'file', XMP_Type:'file'}";
         }
     };
 
-// HERE!!! finish this - add all fields to new window?
-// when list item is clicked, Load it into the edit fields
+// when list item is double clicked, open Edit Field Details window
 fieldList.onDoubleClick = function(){
    var sel = fieldList.selection.index
    var which = [fieldList.items[sel].text, fieldList.items[sel].subItems[0].text, fieldList.items[sel].subItems[1].text, fieldList.items[sel].subItems[2].text, fieldList.items[sel].subItems[3].text];
-// open a new window with the My Label value so it can be edited
-editFieldListItem = new Window('palette', "Edit Field Label");
+editFieldListItem = new Window('palette', "Edit Field Details");
 editFieldListItem.spacing = 20;
 editFieldListItem.alignChildren = 'left';
 
@@ -1800,6 +1799,8 @@ editFieldListItemButtons.but1.onClick = function(){
         triggerEnterCustomName = true;
         editFieldListItem.hide();
         editFieldListItem.close();
+        loadCustom.but1.enabled = true;
+        loadCustom.but2.enabled = true;
         } // CLOSE editFieldListItemButtons.but1.onClick 
 
 editFieldListItemButtons.but2.onClick = function(){
@@ -1852,7 +1853,9 @@ footerBtns.but2.onClick = function(){
     mainWindow.enabled = true;
     }
 
-function saveCustomHeaders(){ // ! HERE when editing existing field (no add or delete) should this not require file name?
+function saveCustomHeaders(){
+loadCustom.but1.enabled = true;
+loadCustom.but2.enabled = true;
 // if list has been changed, require Name, else, don't require name
 if (triggerEnterCustomName == false){ 
     // change custom fields labels
@@ -2524,7 +2527,7 @@ var path = fieldsArr[L1].XMP_Property.slice(fieldsArr[L1].XMP_Property.indexOf("
 							filePass++;
 						}
                      // if file is not supported, add to propFail so filePass is not triggered  
-                    //  if (testFileExtension(Thumb[L2]) == false) //   HERE! changed because it was failing on selectedThumnails
+                    //  if (testFileExtension(Thumb[L2]) == false) //  changed because it was failing on selectedThumnails
                       if (testFileExtension(singleFile) == false)
                       {
                           fileFail++
@@ -2753,7 +2756,6 @@ var textFileNameArr = [];
 				var myFile = allFilesList[L1]
 				if (myFile instanceof File && testFileExtension(myFile) == true && testFilePrefix(myFile) == true) {
 					allFiles.push(myFile.fsName); // PATH EDIT); 
- // $.writeln("IMPORT: "+myFile.fsName) // .toString().split(" ").join("%20").split(slash).join("/")
 					}             
 				}  
 			}
@@ -2876,8 +2878,7 @@ var textFileNameArr = [];
                 "  •  Select a subfolder that has no duplicates\n"+
                 "  •  Move duplicates so they are not in subfolders of the selected parent folder\n"+
                 "  •  Rename duplicates";
-                duplicatesOptions = duplicatesFound.add('statictext', [0, 0, 800, 120], duplicatesOptionsValue, {multiline:true});
-                
+                duplicatesOptions = duplicatesFound.add('statictext', [0, 0, 800, 120], duplicatesOptionsValue, {multiline:true});             
             // Close button
             duplicatesFound.cancelBtn = duplicatesFound.add('button', undefined, "Close");
             duplicatesFound.cancelBtn.alignment = 'center';
