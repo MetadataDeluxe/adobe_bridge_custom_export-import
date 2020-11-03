@@ -28,8 +28,8 @@ SOFTWARE.
 var projectName1 = "Metadata Deluxe" // human friendly
 var projectName2 = "Metadata_Deluxe" // computer friendly.  filenames - don't use spaces, use camelCase or _ or -
 var plgnVers = "1.0";
-var codeVers = "2020-10-03"
-        
+var codeVers = "2020-11-02"
+
 { // brace 1 open
 
 //Create a menu option within Adobe Bridge
@@ -52,16 +52,17 @@ projectName2ExpImp.onSelect = function()
           var libfile = new File( pathToXMPLib );
           var xmpLib = new ExternalObject("lib:" + pathToXMPLib );
 		}
+    
 // TODO different way to identify user prefs folder
+/*
 var userF = Folder.userData; //User library
 var scriptf = File($.fileName); //script name (only works when you run from StartupScripts, not debuggung in ESTK))
 var scriptfo = scriptf.parent; //parent folder of script
 var loc = scriptfo + '/images/'; //images folder
 var UPprefsPath = ''; //path to preferences file
 var UPprefsVersion = '2.0.9'; //always increment with preference file changes
-// $.writeln(scriptf)
-// $.writeln(scriptfo)     
-        
+*/   
+ 
 	// variables  used throughout the code
     // Don't change these unless you really don't like them
 	var plgnName = ""+projectName1+" Metadata Export-Import";
@@ -83,17 +84,15 @@ var UPprefsVersion = '2.0.9'; //always increment with preference file changes
 	// today's date
 	var dateTime = new XMPDateTime(new Date()); // now
 	var dateYMD = dateTime.toString().slice(0, -19);
-	var un = undefined;
-	//	var currentField = {}
-      var arrowLeft = "←";
+	var arrowLeft = "←";
       var arrowRight = "→";
 	//Tool tips
 	var clickInstrucTT = "Click for instructions";
         
-	var imageFolderPath = "Folder containing image files"
-	var imageFolderBrowse = "Locate the path to your folder of images.";
+	var imageFolderPath = "Folder containing files";
+	var imageFolderBrowse = "Locate the path to your folder of images";
 	
-	var textFilePath = ".txt file of metadata to be imported"
+	var textFilePath = ".txt file of metadata to be imported\n\nClick 'Browse' to change"
 	var textFileBrowse = "Locate the path to your .txt file";
 	
 	var dateWhyTT = 
@@ -186,39 +185,41 @@ var UPprefsVersion = '2.0.9'; //always increment with preference file changes
 	 // preferredSize for UI objects
      var hidden = [0,0]
      var panelSize = [700,600]
-    // preferredSize for UI objects
+    // preferredSize for UI objects Windows
     if (Folder.fs == "Windows"){
         var buttonSize1 = [20,20];
-      //  var buttonSize3 = [80,20]
-        var textSize1 = [550,20]
-        var spcr1=[0,0,40,20];
-        var dim08=[0,0,80,25];
-        var dim1=[0,0,100,25];
-        var dim2=[0,0,200,25];
-        var dim3=[0,0,300,25];
-        var dim4=[0,0,400,25];
-        var dim5=[0,0,500,25];
-        var dimC=[0,0,100,200];
-        var dimL = [0,0,1080,450];
+        var buttonSize3 = [150,40];
+        var textSize1 = [550,20];
+        var textSize2 = [660,20];
+        var spcr1 = [0,0,40,20];        
+        var dimx4_1 = [0,0,100,25];
+        var dimx4_2 = [0,0,200,25];
+        var dimx4_3 = [0,0,300,25];
+        var dimx4_4 = [0,0,400,25];
+        var dimx4_5 = [0,0,500,25];        
+        var dimx4_8 = [0,0,80,25];
+        var dimx4_9 = [0,0,100,200];
         }
+    // preferredSize for UI objects Mac
     else{
         var buttonSize1 = [34,34];
-     //   var buttonSize3 = [100,34]
-        var textSize1 = [560,20]
-        var dim08=[0,0,80,25];
-        var dim1=[0,0,100,25];
-        var dim2=[0,0,200,25];
-        var dim3=[0,0,300,25];
-        var dim4=[0,0,400,25];
-        var dim5=[0,0,500,25];
-        var dimC=[0,0,100,200];
-        var dimL = [0,0,1000,450];
+        var buttonSize3 = [150,45];
+        var textSize1 = [560,20];
+        var textSize2 = [660,20];
+        var spcr1 = [0,0,40,20];        
+        var dimx4_1 = [0,0,100,25];
+        var dimx4_2 = [0,0,200,25];
+        var dimx4_3 = [0,0,300,25];
+        var dimx4_4 = [0,0,400,25];
+        var dimx4_5 = [0,0,500,25];        
+        var dimx4_8 = [0,0,80,25];
+        var dimx4_9 = [0,0,100,200];
         }
 
 	var exportImageFolderOK = false;
 	var exportTextFolderOK = false;
 	var exportTextFileOK = false;	
-	var importImageFolderOK = false;
+// no longer needed	var importImageFolderOK = false;
 	var importTextFolderOK = false;
 	var importTextFileOK = false;
           
@@ -235,10 +236,10 @@ var UPprefsVersion = '2.0.9'; //always increment with preference file changes
 		var mainWindow = new Window('palette', projectName1+" Export-Import - code version: "+plgnVers+" ("+codeVers+")");
 		{ //  main UI window - brace 1 open
             // header
-            settingsGroup = mainWindow.add('group', un, un)
+            settingsGroup = mainWindow.add('group', undefined, undefined)
             //settingsGroup.preferredSize = [720, 20]
             settingsGroup.alignment='left';
-            fieldsTxt = settingsGroup.add('statictext', dim3, "Current Fields: "+lastViewedHeadersPanel)
+            fieldsTxt = settingsGroup.add('statictext', dimx4_3, "Current Fields: "+lastViewedHeadersPanel)
             //fieldsTxt.justify = "center";
             fieldsTxt.graphics.font = ScriptUI.newFont ("Arial", 'BOLD', 16);
             fieldsTxt.graphics.foregroundColor = fieldsTxt.graphics.newPen (mainWindow.graphics.PenType.SOLID_COLOR, [1,0.58,0], 1);
@@ -250,17 +251,16 @@ var UPprefsVersion = '2.0.9'; //always increment with preference file changes
             setHeaders.onClick = function(){
                 mainWindow.enabled = false;
                 fieldsWindow.show();
+                fieldsWindow.active = true;
                 originalLastViewedHeadersPanel = lastViewedHeadersPanel;
                 originalCustomFileText = customFileText;
-                } //setHeadersFunc toggleNavBtns()
+                }
 
-        navGroup = mainWindow.add('group', un, un)
+        navGroup = mainWindow.add('group', undefined, undefined)
         navExportBtn = navGroup.add('radiobutton', undefined, arrowLeft+"EXPORT"+arrowRight)
         navExportBtn.preferredSize = [150,20];
         navExportBtn.value = true
         navExportBtn.onClick = function(){mode = "export"; toggleNav();}
-        // navSpcr1 = navGroup.add('statictext', undefined, "")
-        // navSpcr1.preferredSize = [100,40];
         navImportBtn = navGroup.add('radiobutton', undefined, "import")
         navImportBtn.preferredSize = [150,20];
         navImportBtn.onClick = function(){mode = "import"; toggleNav();}
@@ -271,15 +271,14 @@ var UPprefsVersion = '2.0.9'; //always increment with preference file changes
 	  
         // Export section
         exportPanel = mainWindow.row.add('panel', undefined, "Export Metadata");
-        exportPanel.margins = 5;
-   //     exportPanel.alignment = 'top';
+        exportPanel.margins = 3;
         exportPanel.alignChildren = 'center';
-        exportPanel.minimumSize = [700,undefined]
-        exportPanel.maximumSize = [700,undefined]
+        exportPanel.minimumSize = [675, undefined];
+        exportPanel.maximumSize = [675, undefined];
         // Export Instructions button
         exportInstButton = exportPanel.add('button', undefined, "?");
+        exportInstButton.preferredSize = buttonSize1        
         exportInstButton.alignment = 'right';
-        exportInstButton.preferredSize = buttonSize1
         exportInstButton.helpTip = clickInstrucTT;
         exportInstButton.onClick = showExportInst;
 
@@ -287,7 +286,7 @@ var UPprefsVersion = '2.0.9'; //always increment with preference file changes
 		var selections = app.document.selections;
 		var folder  = app.document.visibleThumbnails;
 
-		exportWhich = exportPanel.add('panel', undefined, "Images");
+		exportWhich = exportPanel.add('panel', undefined, "Files to export");
 		exportWhich.alignChildren = 'left';
 		exportWhich.spacing = 2;
         exportWhich.margins = 5;
@@ -312,18 +311,18 @@ var UPprefsVersion = '2.0.9'; //always increment with preference file changes
         exportWhich.subfoldersGr = exportWhich.add('group');
         exportWhich.subfoldersGr.orientation = 'column';
         exportWhich.subfoldersGr.alignChildren = 'left';
-        exportWhich.subfoldersGr.indent = 20;
+        exportWhich.subfoldersGr.indent = 100;
         exportWhich.subfoldersGr.spacing = 0;
-        exportWhich.subfoldersGr.minimumSize = [700,undefined];
         
         exportWhich.folderEt = exportWhich.subfoldersGr.add('statictext', undefined, "");
-		exportWhich.folderEt.preferredSize = textSize1
+		exportWhich.folderEt.minimumSize = textSize1; // textSize1 = [550,20]
+        exportWhich.folderEt.maximumSize = textSize1;
 		exportWhich.folderEt.helpTip = imageFolderPath;
 
 		exportWhich.subfoldersCb = exportWhich.subfoldersGr.add('checkbox', undefined, "include subfolders");		
       
         // Panel for options
-         exportOptionsGrp = exportPanel.add('group', un, un);
+         exportOptionsGrp = exportPanel.add('group', undefined, undefined);
 		
 		exportOptions = exportOptionsGrp.add('panel', undefined, 'Options');
 		exportOptions.alignChildren = 'left'; 
@@ -351,7 +350,7 @@ var UPprefsVersion = '2.0.9'; //always increment with preference file changes
 		exportOptionsButton.onClick = showExportOptInst
 
 		exportBtn = exportPanel.add('button', undefined, "Export");   
-		exportBtn.preferredSize = [120, 35];
+		exportBtn.preferredSize = buttonSize3;
 		exportBtn.enabled = false;
 		exportBtn.onClick = exportToFile;
 
@@ -360,11 +359,9 @@ var UPprefsVersion = '2.0.9'; //always increment with preference file changes
 			var selectedFolder = Folder(exportWhich.folderEt.text.split(" ").join("%20"));			
 			if (exportWhich.folderEt.text && selectedFolder.exists == false){
 				exportImageFolderOK = false;
-			//	exportWhich.folderEt.Alert.visible = true;
 				}
 			else if (exportWhich.folderEt.text && selectedFolder.exists == true){
 				exportImageFolderOK = true;
-			//	exportWhich.folderEt.Alert.visible = false;
 				}
 			toggleExportBtn();
 			}
@@ -422,14 +419,15 @@ var UPprefsVersion = '2.0.9'; //always increment with preference file changes
                     "                    i. File origin = 65001- Unicode (UTF-8)\n" +
                     "                    ii. Delimited = Tab\n" +
                     "                    iii. Finish\n" +
-                    "          3. The first row will contain the field names."
+                    "          3. The first row will contain the field names.\n"+
+                    "              Each row below that will contain metadata for a single exported file."
    
                ExportInstText = ExportInst.add('statictext', undefined, body, {multiline:true});
 			   if (Folder.fs == "Windows"){
-				ExportInstText.preferredSize = [600,450];
+				ExportInstText.preferredSize = [600,400];
 				}
 			else{
-				ExportInstText.preferredSize = [700, 550];
+				ExportInstText.preferredSize = [700, 500];
 				}
             
             ExportInst.optionsBtn = ExportInst.add('button', undefined, 'Export options');
@@ -439,8 +437,10 @@ var UPprefsVersion = '2.0.9'; //always increment with preference file changes
 			ExportInst.cancelBtn.onClick =  function(){ 
 				ExportInst.hide();
                 ExportInst.close();
+                mainWindow.active = true;
 				}
                ExportInst.show();
+               ExportInst.active = true;
 			}
             
             function showExportOptInst(){
@@ -462,10 +462,10 @@ var UPprefsVersion = '2.0.9'; //always increment with preference file changes
                     
                exportOptInstText = exportOptInst.add('statictext', undefined, body, {multiline:true});
 			   if (Folder.fs == "Windows"){
-				exportOptInstText.preferredSize = [650,250];
+				exportOptInstText.preferredSize = [650,230];
 				}
 			else{
-				exportOptInstText.preferredSize = [700,350];
+				exportOptInstText.preferredSize = [700,280];
 				}
                exportOptInst.cancelBtn = exportOptInst.add('button', undefined, 'Close');
 			exportOptInst.cancelBtn.onClick =  function(){ 
@@ -473,6 +473,7 @@ var UPprefsVersion = '2.0.9'; //always increment with preference file changes
                 exportOptInst.close();
 				}
                exportOptInst.show();
+               exportOptInst.active = true;
 			}
  
 		// Panel for Import section
@@ -533,15 +534,17 @@ var UPprefsVersion = '2.0.9'; //always increment with preference file changes
 			else{
 				ImportInst.text2.preferredSize = [620,170];
 				}
-          ImportInst.optionsBtn = ImportInst.add('button', undefined, 'Import options');
-           ImportInst.optionsBtn.onClick = function(){showImportOptInst();}
-             ImportInst.optionsBtn.alignment = 'left'
-			ImportInst.cancelBtn = ImportInst.add('button', undefined, 'Close');
+            ImportInst.optionsBtn = ImportInst.add('button', undefined, 'Import options');
+            ImportInst.optionsBtn.onClick = function(){showImportOptInst();}
+            ImportInst.optionsBtn.alignment = 'left'
+            ImportInst.cancelBtn = ImportInst.add('button', undefined, 'Close');
 			ImportInst.cancelBtn.onClick =  function(){ 
 				ImportInst.hide();
                 ImportInst.close();
+                mainWindow.active = true;
 				}  		
 			ImportInst.show();
+			ImportInst.active = true;
 		}
                
 		function showImportOptInst(){
@@ -559,10 +562,10 @@ var UPprefsVersion = '2.0.9'; //always increment with preference file changes
 
                importOptInstText = importOptInst.add('statictext', undefined, body, {multiline:true});
 			   if (Folder.fs == "Windows"){
-				importOptInstText.preferredSize = [650,150];
+				importOptInstText.preferredSize = [650,160];
 				}
 			else{
-				importOptInstText.preferredSize = [650,250];
+				importOptInstText.preferredSize = [650,200];
 				}
                importOptInst.cancelBtn = importOptInst.add('button', undefined, 'Close');
 			importOptInst.cancelBtn.onClick =  function(){ 
@@ -570,25 +573,57 @@ var UPprefsVersion = '2.0.9'; //always increment with preference file changes
                 importOptInst.close();
 				}
                importOptInst.show();
+               importOptInst.active = true;
 			}
         
 		// Select image files location
-		imageLocBox = importPanel.add('panel', undefined, "Images folder");
+		imageLocBox = importPanel.add('panel', undefined, "Import to files in selected folder");
 		imageLocBox.spacing = 2;
-        imageLocBox.margins = 5;      
+        imageLocBox.margins = 5;     
+        imageLocBox.alignment = 'left';      
          // Spacer
 		spacer3 = imageLocBox.add( 'group' );
 		spacer3.minimumSize = [100, 10]
+        // folder path of files to be imported to
+		imageLocGroup = imageLocBox.add('group');
+		imageLocGroup.orientation = 'row';
+        imageLocGroup.spacing = 2;
+		imageLoc = imageLocGroup.add('statictext', undefined, "");
+		imageLoc.preferredSize = textSize2;
+		imageLoc.helpTip = imageFolderPath;
+        /* no longer used - folder navigation is done in Bridge UI
+		//imageLocBrowse = imageLocGroup.add('button', undefined, "Browse");
+		//imageLocBrowse.helpTip = imageFolderBrowse;
+		imageLocAlert = imageLocBox.add('statictext', undefined, "? Folder not found.  Keep looking.");
+		imageLocAlert.alignment = 'left';
+		imageLocAlert.justify = 'left';
+		imageLocAlert.indent = 20;
+        imageLocAlert.preferredSize = textSize1
+	imageLocAlert.visible = false
+    */
+    
+	/*  
+        not using this anymore - now using current folder selected in Bridge (user can navigate to another folder in Bridge and the import location will be updated)
+		// opens file browser to pick the location of the image files 
+		imageLocBrowse.onClick =  function(){
+		var folderPath = Folder.selectDialog("Select a folder of image files to import metadata");
+            if (folderPath){
+                imageLoc.text = folderPath.toString().split ("%20").join (" ");
+                testImportImagesFolder();
+                imageLoc.helpTip = imageLoc.text+"\n\n"+imageFolderPath
+                }
+			}
+        */
+    
+        // subfolders option
 		imageLocLblGrp = imageLocBox.add('group');
 		imageLocLblGrp.orientation = 'row';
 		imageLocLblGrp.alignment = 'left';
-	//	imageLocLblGrp.spacing = 100
-		imageLocLblGrp.indent = 3//55;
-        imageLocSubfoldersLbl = imageLocLblGrp.add('statictext', undefined, "folder location:");
-        imageLocSubfoldersLbl.preferredSize = [160,20]
+		imageLocLblGrp.indent = 3;
+     //   imageLocSubfoldersLbl = imageLocLblGrp.add('statictext', undefined, "folder location:");
+    //    imageLocSubfoldersLbl.preferredSize = [160,20]
 		imageLocSubfoldersCb = imageLocLblGrp.add('checkbox', undefined, "include subfolders");		
 		imageLocSubfoldersCb.alignment = 'left';
-	//	imageLocSubfoldersCb.indent = 60;
 		imageLocSubfoldersCb.onClick = function toggleImportSub(){
 			if (imageLocSubfoldersCb.value == true){
 				dataSourceOptions.enabled = true
@@ -603,32 +638,10 @@ var UPprefsVersion = '2.0.9'; //always increment with preference file changes
 				IgnoreExtCb.enabled = true;
 				}
 			}
-		imageLocGroup = imageLocBox.add('group');
-		imageLocGroup.orientation = 'row';
-        imageLocGroup.spacing = 2;
-		imageLoc = imageLocGroup.add('statictext', undefined, "");
-		imageLoc.preferredSize = textSize1
-		imageLoc.helpTip = imageFolderPath;
-		//imageLocBrowse = imageLocGroup.add('button', undefined, "Browse");
-		//imageLocBrowse.helpTip = imageFolderBrowse;
-		imageLocAlert = imageLocBox.add('statictext', undefined, "? Folder not found.  Keep looking.");
-		imageLocAlert.alignment = 'left';
-		imageLocAlert.justify = 'left';
-		imageLocAlert.indent = 20;
-        imageLocAlert.preferredSize = textSize1
-	imageLocAlert.visible = false
-	/*  
-		// opens file browser to pick the location of the image files 
-		imageLocBrowse.onClick =  function(){
-		var folderPath = Folder.selectDialog("Select a folder of image files to import metadata");
-            if (folderPath){
-                imageLoc.text = folderPath.toString().split ("%20").join (" ");
-                testImportImagesFolder();
-                imageLoc.helpTip = imageLoc.text+"\n\n"+imageFolderPath
-                }
-			}
-        */
-		 
+            // Spacer
+            spacer5 = imageLocBox.add( 'group' );
+            spacer5.minimumSize = [100, 20]
+        
 		// Select the .txt  file to be imported
 		dataSourceBox = importPanel.add('panel', undefined, "Metadata text file");
 		dataSourceBox.spacing = 3;
@@ -638,7 +651,7 @@ var UPprefsVersion = '2.0.9'; //always increment with preference file changes
 		spacer4.minimumSize = [100, 10];
 		dataSourceGrp = dataSourceBox.add('statictext', undefined, "file location:");
 		dataSourceGrp.alignment = 'left';
-		dataSourceGrp.indent = 3//68;
+		dataSourceGrp.indent = 3;
         dataSourceGrp.preferredSize = [160,20]
 		dataSourceGroup = dataSourceBox.add('group');
 		dataSourceGroup.orientation = 'row';      
@@ -649,6 +662,8 @@ var UPprefsVersion = '2.0.9'; //always increment with preference file changes
 		dataSourceBrowse = dataSourceGroup.add('button', undefined, "Browse");
 		dataSourceBrowse.helpTip = textFileBrowse;
 		dataSourceFileAlert = dataSourceBox.add('statictext', undefined, "? File not found.  Keep looking.");
+        dataSourceFileAlert.graphics.foregroundColor = dataSourceFileAlert.graphics.newPen (dataSourceFileAlert.graphics.PenType.SOLID_COLOR, [1,0,0], 1);
+
 		dataSourceFileAlert.alignment = 'left';
 		dataSourceFileAlert.justify = 'left';
         dataSourceFileAlert.preferredSize = [200,20]
@@ -662,17 +677,15 @@ var UPprefsVersion = '2.0.9'; //always increment with preference file changes
              //   dataSource.text = filePath.toString().split ("%20").join (" ");
                 dataSource.text = filePath.fsName.toString().split ("%20").join (" ");  // PATH EDIT
                 testTextFileExists();
-                dataSource.helpTip = dataSource.text+"\n\n"+textFilePath
+                dataSource.helpTip = textFilePath;
                 }
 		}
 		  
 		dataSourceOptions = importPanel.add('panel', undefined, "Match on");
 		dataSourceOptions.Name = dataSourceOptions.add('radiobutton', undefined, "Filename");
         dataSourceOptions.Name.value = true;
-		dataSourceOptions.Name.helpTip = "Example:\n 00252901.tif";
 		dataSourceOptions.Path = dataSourceOptions.add('radiobutton', undefined, "Path and filename");
 		dataSourceOptions.alignChildren = 'left';
-		dataSourceOptions.Path.helpTip = "Example:\n C:/Architecture/Trajans_Column/Large/00252901.tif";
 	     dataSourceOptions.minimumSize = [310, undefined]
 		dataSourceOptions.spacing = 2;		
 
@@ -681,14 +694,12 @@ var UPprefsVersion = '2.0.9'; //always increment with preference file changes
 		writeOptions.spacing = 2;	
 		writeOptions.overwriteRb = writeOptions.add('radiobutton', undefined, "Overwrite all fields");   
 		writeOptions.overwriteRb.value = true
-	//	writeOptions.overwriteRb.helpTip = replaceDataTT;
 		writeOptions.appendRb = writeOptions.add('radiobutton', undefined, "Write only to empty fields");
         writeOptions.appendRb.value = true;
-	//	writeOptions.appendRb.helpTip = appendDataTT;
 		writeOptions.alignChildren = 'left';
 		writeOptions.minimumSize = [310, undefined]
-// Panel for options
-     importOptionsGrp = importPanel.add('group', un, un);
+        // Panel for options
+         importOptionsGrp = importPanel.add('group', undefined, undefined);
 		importOptions = importOptionsGrp.add('panel', undefined, "Options");	 
 		importOptions.alignChildren = 'left';
 		importOptions.minimumSize = [275, undefined]
@@ -710,7 +721,7 @@ var UPprefsVersion = '2.0.9'; //always increment with preference file changes
 		importOptionsButton.preferredSize = buttonSize1
 		importOptionsButton.helpTip = clickInstrucTT;
 		importOptionsButton.onClick = showImportOptInst	
-				  
+/* no longer needed - folder navigation is done in Bridge UI				  
 	// check to see if the folder of images specified exists
 		function testImportImagesFolder(){
 			var selectedFolder = Folder(imageLoc.text.split(" ").join("%20"));			
@@ -724,7 +735,7 @@ var UPprefsVersion = '2.0.9'; //always increment with preference file changes
 				}
 			toggleImportBtn();
 			}		
-				
+*/				
 		// check to see if the .txt file folder specified exists
 		function testTextFileExists(){
 			// get just the directory
@@ -741,7 +752,7 @@ var UPprefsVersion = '2.0.9'; //always increment with preference file changes
 			}
 
 		function toggleImportBtn(){
-			if (importImageFolderOK == true && importTextFileOK == true ){
+			if (importTextFileOK == true ){ // removed importImageFolderOK == true && 
 				importBtn.enabled = true;
 				}
 			else{
@@ -750,12 +761,12 @@ var UPprefsVersion = '2.0.9'; //always increment with preference file changes
 			}
 		
 		  // test to see if the paths entered by user exist
-		 imageLoc.addEventListener('changing',function(){testImportImagesFolder()});
+// no longer needed		 imageLoc.addEventListener('changing',function(){testImportImagesFolder()});
 		 dataSource.addEventListener('changing',function(){testTextFileExists()});
 		 
           // Import button
           importBtn = importPanel.add('button', undefined, "Import");
-          importBtn.preferredSize = [120, 35];
+          importBtn.preferredSize = buttonSize3;
           importBtn.onClick = importFromFile;
             
 		// Create a text file on the desktop with only the headers.  This can be used as a template in Excel to create properly formatted text for the import function
@@ -767,7 +778,7 @@ var UPprefsVersion = '2.0.9'; //always increment with preference file changes
 			for (var L1 = 0; L1 < fieldsArr.length; L1++) vraTemplate.write (fieldsArr[L1].Label + "\t");
 			// Close the file  ""+projectName2+"_import_template.txt"
 			vraTemplate.close();
-			Window.alert ("A new file named:\n\n"+projectName2+"_import_default template.txt\n\nhas been created on your desktop.", "Success!")
+			Window.alert ("A new file named:\n\n"+projectName2+"_import_default template.txt\n\nhas been created on your desktop", "Success!")
 			}
 			
 		// Cancel button
@@ -873,27 +884,8 @@ if (customFilePath.exists == true){ // !!! if "- Select Custom -"
              }        
             }
         }
-        // register namespaces
-        /* Namespaces
-        these default namespaces can be used without registering them:
-            XMPConst.NS_AUX
-            XMPConst.NS_DC
-            XMPConst.NS_EXIF
-            XMPConst.NS_IPTC_CORE
-            XMPConst.NS_PHOTOSHOP
-            XMPConst.NS_TIFF
-            XMPConst.NS_XML
-            XMPConst.NS_XMP
-            XMPConst.NS_XMP_RIGHTS          
-        other namespaces must be registered below 
-        */
-        // register w3 for writing LangAlt properties CHANGED to XMPConst.NS_XML
-    //    var NS_W3 = "http://www.w3.org/XML/1998/namespace";
-     //   XMPMeta.registerNamespace (NS_W3, "xml");
-        // PLUS prefix is problematic - might need to do this, not sure...
-       // XMPMeta.registerNamespace ("http://ns.useplus.org/ldf/xmp/1.0/", "plus");
-      //  var plusPrefix = XMPMeta.getNamespacePrefix ("http://ns.useplus.org/ldf/xmp/1.0/");
-        //var plusCRownerName = "CopyrightOwner[1]/"+plusPrefix+"CopyrightOwnerName"
+
+    // register namspaces in custom fields list
     for (var L2 = 0; L2 < out.length; L2++){
         // not "file"
         if(out[L2].namespace != "file"){
@@ -935,15 +927,16 @@ else{
         testExportImagesFolder();
         //   testTextFolderExists();
         //   testTextFileExtension();
-        testImportImagesFolder();
+  // no longer needed      testImportImagesFolder();
         testTextFileExists();
-        exportWhich.folderEt.helpTip = exportWhich.folderEt.text+"\n\n"+imageFolderPath
-        imageLoc.helpTip = imageLoc.text+"\n\n"+imageFolderPath
-        dataSource.helpTip = dataSource.text+"\n\n"+textFilePath
+        exportWhich.folderEt.helpTip = "Change folder using Bridge navigation"
+        imageLoc.helpTip = "Change folder using Bridge navigation"
+        dataSource.helpTip = textFilePath
         // set panel view
         toggleNav()
 		// open the window
-		mainWindow.show();   
+		mainWindow.show();
+		mainWindow.active = true;   
         
         // if no fields list exists, open a new window to prompt user to edit the fields list
         editFieldsPrompt = new Window('palette', "Fields UNDEFINED");
@@ -967,14 +960,17 @@ else{
             editFieldsPrompt.close();
             mainWindow.enabled = false;
             fieldsWindow.show();
+            fieldsWindow.active = true;
             originalLastViewedHeadersPanel = lastViewedHeadersPanel;
             originalCustomFileText = customFileText;
             }
         if(fieldsTxt.text == "Fields: UNDEFINED"){
         editFieldsPrompt.show();
+        editFieldsPrompt.active = true;
         }
      } // main UI window - brace 1 close
 //////////////////////////////////////////////////////////////// END OF MAIN UI WINDOW ////////////////////////////////////////////////////////////////
+// fields from popular schemas
 var basicFieldsArr = [
 {Schema_Field:'File-Folder', Label:'File Folder', Namespace:'file', XMP_Property:'file', XMP_Type:'file'},
 {Schema_Field:'IPTC-Title', Label:'Title', Namespace:'http://purl.org/dc/elements/1.1/', XMP_Property:'dc:title', XMP_Type:'langAlt'},
@@ -1120,12 +1116,6 @@ var customFieldsArr = [
 ];
 
 //////////////////////////////////////////////////////////////// BEGIN BUILD PROPERTIES WINDOW ////////////////////////////////////////////////////////////////
-//var codeVersion = "2019-07-19";
-// changes
-// removed Schema:; changed Defasult-Label to Label; changed Custom_Label to Label
-// made field variables more consistant (f1 > et1)
-// added schema dropdown and load fields based on schema. added Manage button
-
 var fieldsWindow = new Window("palette", "Customize Fields", undefined); // , {closeButton:true} removed because it casued the script to freeze
 var schemaArr = ['File','IPTC Core','Dublin Core','VRA Core','Custom'];
 var xmpTypeArr = ['', 'text', 'bag', 'seq', 'langAlt', 'boolean', 'date', 'file'];  // '-Select-', 
@@ -1136,8 +1126,6 @@ fieldsWindow.alignChildren = 'left'
 //fieldsWindow.graphics.backgroundColor = fieldsWindow.graphics.newBrush(fieldsWindow.graphics.BrushType.SOLID_COLOR,[0,0,0], 1);
 //fieldsWindow.margins = [10,10,10,10];
 
-// if it doesn't already exist, create folder 'userData/VRA_Import_Export/Options'
-// if (Folder (appDataFwdSlash + plgnPrefs + plgnOpt).exists == false) new Folder (appDataFwdSlash + plgnPrefs + plgnOpt).create();  // TODO: redundant?
 // if it doesn't already exist, create folder: C:\Users\[user name]\AppData\Roaming\VRA_Import_Export\Headers
 if (Folder (appDataFwdSlash + plgnPrefs + plgnHeaders).exists == false) new Folder (appDataFwdSlash + plgnPrefs + plgnHeaders).create();
 
@@ -1149,18 +1137,13 @@ loadCustom.spacing=0;
 loadCustom.orientation = "column";
 
 loadCustom.grp2 = loadCustom.add("group");
-//loadCustom.st1 = loadCustom.grp2.add("statictext", dim1, "Current Fields: ");
-//loadCustom.st1.minimumSize = [50,20];
-//loadCustom.st1.graphics.font = ScriptUI.newFont ("Arial", 'BOLD', 14);
-//loadCustom.st1.graphics.foregroundColor = loadCustom.st1.graphics.newPen (mainWindow.graphics.PenType.SOLID_COLOR, [1,0.58,0], 1);
-loadCustom.et1 = loadCustom.grp2.add("statictext", dim2, "Current Fields: UNDEFINED"); //loadCustom.et1.text = "Current Fields: UNDEFINED";
+loadCustom.et1 = loadCustom.grp2.add("statictext", dimx4_2, "Current Fields: UNDEFINED");
 loadCustom.et1.minimumSize = [300,20];
-//loadCustom.et1.justify = "center";
 loadCustom.et1.graphics.font = ScriptUI.newFont ("Arial", 'BOLD', 14);
 loadCustom.et1.graphics.foregroundColor = loadCustom.et1.graphics.newPen (mainWindow.graphics.PenType.SOLID_COLOR, [1,0.58,0], 1);
 loadCustom.et1.helpTip = "List of fields to be exported/imported";
-loadCustom.but1 = loadCustom.grp2.add("button", dim08, "Change");
-loadCustom.but1.helpTip = "Select and load a saved custom field list.";
+loadCustom.but1 = loadCustom.grp2.add("button", dimx4_8, "Change");
+loadCustom.but1.helpTip = "Select and load a saved custom field list";
 loadCustom.but1.onClick = function(){ // open user prefs folder to find a saved custom fields config file
     try{
     var path = new File(appDataFwdSlash + plgnPrefs + plgnHeaders);
@@ -1204,8 +1187,8 @@ catch(e){}
 } // CLOSE loadCustom.but1.onClick
 
 //loadCustom.spcr1 = loadCustom.grp2.add("statictext", spcr1, "");
-loadCustom.but2 = loadCustom.grp2.add("button", dim08, "Manage");
-loadCustom.but2.helpTip = "Open folder containing your custom field lists so you can edit or delete them.";
+loadCustom.but2 = loadCustom.grp2.add("button", dimx4_8, "Manage");
+loadCustom.but2.helpTip = "Open folder containing your custom field lists so you can edit or delete them";
 loadCustom.but2.onClick =  function(){ // open user prefs folder
     Folder(appDataFwdSlash + plgnPrefs + plgnHeaders).execute()
     }
@@ -1237,7 +1220,7 @@ function showLoadCustomInst(){
 		loadCustomInstText.preferredSize = [550,250];
 		}
 	else{
-		loadCustomInstText.preferredSize = [550,350];
+		loadCustomInstText.preferredSize = [550,300];
 		}
     
 listFormatHelp = loadCustomInst.add('button', undefined, "Required mapping format");
@@ -1277,7 +1260,7 @@ var ListFormatInstBody =
 		ListFormatInstText.preferredSize = [950,450];
 		}
 	else{
-		ListFormatInstText.preferredSize = [950,550];
+		ListFormatInstText.preferredSize = [950,530];
 		}
 	   ListFormatInst.cancelBtn = ListFormatInst.add('button', undefined, 'Close');
 	ListFormatInst.cancelBtn.onClick =  function(){ 
@@ -1285,16 +1268,19 @@ var ListFormatInstBody =
 		ListFormatInst.close();
 		}
 	   ListFormatInst.show();
+	   ListFormatInst.active = true;
     }
 	   loadCustomInst.cancelBtn = loadCustomInst.add('button', undefined, 'Close');
 	loadCustomInst.cancelBtn.onClick =  function(){ 
 		loadCustomInst.hide();
 		loadCustomInst.close();
+		fieldsWindow.active = true;
 		}
 	   loadCustomInst.show();
+	   loadCustomInst.active = true;
 	}
 
-var spcr1 = fieldsWindow.add ("statictext", dim3, "");
+var spcr1 = fieldsWindow.add ("statictext", dimx4_3, "");
 
 var fieldInput = fieldsWindow.add("group");
 fieldInput.alignChildren = "left";
@@ -1302,7 +1288,7 @@ fieldInput.orientation = "column";
 fieldInput.spacing = 0;
 // where the user selects and customizes  fields
 var fieldInputLabelGrp = fieldInput.add("group");
-var fieldInputLabel = fieldInputLabelGrp.add("statictext", dim1, "Customize");
+var fieldInputLabel = fieldInputLabelGrp.add("statictext", dimx4_1, "Customize");
 fieldInputLabel.alignment = "left";
 fieldInputLabel.graphics.font = ScriptUI.newFont ("Arial", 'BOLD', 14)
 
@@ -1341,7 +1327,7 @@ var editCustomInstBody =
 		editCustomInstText.preferredSize = [450,350];
 		}
 	else{
-		editCustomInstText.preferredSize = [450,450];
+		editCustomInstText.preferredSize = [450,420];
 		}
 	   editCustomInst.cancelBtn = editCustomInst.add('button', undefined, 'Close');
 	editCustomInst.cancelBtn.onClick =  function(){ 
@@ -1349,6 +1335,7 @@ var editCustomInstBody =
 		editCustomInst.close();
 		}
 	   editCustomInst.show();
+	   editCustomInst.active = true;
     }
 
 // dropdown to load schema fields
@@ -1357,14 +1344,13 @@ loadSchema.alignChildren = "left";
 loadSchema.margins = [0,0,0,0];
 loadSchema.spacing=0;
 loadSchema.orientation = "column";
-loadSchema.st1 = loadSchema.add("statictext", dim1, "Load standard schema fields")
+loadSchema.st1 = loadSchema.add("statictext", dimx4_1, "Load standard schema fields")
 loadSchema.st1.minimumSize = [300,20];
 loadSchema.grp1 = loadSchema.add("group");
-loadSchema.dd1 = loadSchema.grp1.add("dropdownlist", dim2, ["","File","Basic","IPTC Core","Dublin Core","VRA Core"]);
+loadSchema.dd1 = loadSchema.grp1.add("dropdownlist", dimx4_2, ["","File","Basic","IPTC Core","Dublin Core","VRA Core"]);
 
 loadSchema.dd1.onChange=function(){
   var fileNameRegex = /File-Name/;
-   // if(loadSchema.dd1.selection.text != "File" && !(fileNameRegex.test(fieldList.items[0]))){
         if(!(fileNameRegex.test(fieldList.items[0]))){
         var newItem = fieldList.add("item", 'File-Name');
         newItem.subItems[0].text = 'File Name';
@@ -1391,38 +1377,34 @@ loadSchema.dd1.onChange=function(){
     lastViewedHeadersPanel = loadSchema.dd1.selection.text;
     triggerEnterCustomName = true;
     };
-//spacerX = fieldInput.add("statictext", dim1, "");
-addFieldsLbl = fieldInput.add("statictext", dim1, "Add a field");
+addFieldsLbl = fieldInput.add("statictext", dimx4_1, "Add a field");
 addFieldsLbl.margins = [0,0,0,0];
 var fieldLabels =fieldInput.add("group");
 fieldLabels.spacing=5;
 fieldLabels.margins = [0,0,0,0];
-fieldLabels.lbl1 = fieldLabels.add("statictext", dim1, "Schema");
+fieldLabels.lbl1 = fieldLabels.add("statictext", dimx4_1, "Schema");
 fieldLabels.lbl1.helpTip = "Pre-defined schema field name (not editable)";
-fieldLabels.lbl2 = fieldLabels.add("statictext", dim2, "Field");
+fieldLabels.lbl2 = fieldLabels.add("statictext", dimx4_2, "Field");
 fieldLabels.lbl2.helpTip = "Do not change for pre-defined schemas, set your own for custom property";
-fieldLabels.lbl3 = fieldLabels.add("statictext", dim2, "My Label");
+fieldLabels.lbl3 = fieldLabels.add("statictext", dimx4_2, "My Label");
 fieldLabels.lbl3.helpTip = "The label you want to use for the field";
-fieldLabels.lbl4 = fieldLabels.add("statictext", dim3, "Namespace");
+fieldLabels.lbl4 = fieldLabels.add("statictext", dimx4_3, "Namespace");
 fieldLabels.lbl4.helpTip = "namespace URL, EXAMPLE: http://purl.org/dc/elements/1.1/";
-fieldLabels.lbl5 = fieldLabels.add("statictext", dim2, "XMP_Property");
+fieldLabels.lbl5 = fieldLabels.add("statictext", dimx4_2, "XMP_Property");
 fieldLabels.lbl5.helpTip = "namespace prefix:property name, EXAMPLE: dc:title";
-fieldLabels.lbl6 = fieldLabels.add("statictext", dim08, "XMP_Type");
+fieldLabels.lbl6 = fieldLabels.add("statictext", dimx4_8, "XMP_Type");
 fieldLabels.lbl6.helpTip = "XMP property type. Consult schema documentation, or set for your custom property";
-//fieldLabels.graphics.backgroundColor = fieldsWindow.graphics.newBrush(fieldsWindow.graphics.BrushType.SOLID_COLOR,[0.7,0.7,0.7], 1);
-//for(var i = 0; i < fieldLabels.children.length; i++)
-//fieldLabels.children[i].graphics.font = ScriptUI.newFont ("Arial", 'BOLD', 12)
 
 var inputs =fieldInput.add("group"); inputs.spacing=5;
 //inputs.margins = [0,0,0,0];
 inputs.spacing=5;
-inputs.ddl10 = inputs.add("dropdownlist", dim1, schemaArr) // Schema
+inputs.ddl10 = inputs.add("dropdownlist", dimx4_1, schemaArr) // Schema
 //inputs.ddl10.selection = 0
-inputs.ddl1 = inputs.add("dropdownlist", dim2, []) // Field
-inputs.et1 = inputs.add("edittext", dim2, '') // Label
-inputs.et2 = inputs.add("edittext", dim3, '') // Namespace
-inputs.et3 = inputs.add("edittext", dim2, '') // XMP_Property
-inputs.ddl2 = inputs.add("dropdownlist", dim08, xmpTypeArr) // XMP_Type
+inputs.ddl1 = inputs.add("dropdownlist", dimx4_2, []) // Field
+inputs.et1 = inputs.add("edittext", dimx4_2, '') // Label
+inputs.et2 = inputs.add("edittext", dimx4_3, '') // Namespace
+inputs.et3 = inputs.add("edittext", dimx4_2, '') // XMP_Property
+inputs.ddl2 = inputs.add("dropdownlist", dimx4_8, xmpTypeArr) // XMP_Type
 
 if (typeof Array.prototype.indexOf != "function") {  
     Array.prototype.indexOf = function (el) {  
@@ -1495,15 +1477,13 @@ if (typeof Array.prototype.indexOf != "function") {
     }
 var fieldsWindowScpr = fieldsWindow.add('statictext', undefined, "");
 // add field from entered values
-addBtn = fieldsWindow.add('button', [0,0,150,25], "Add") //dim08 [0,0,80,25]
+addBtn = fieldsWindow.add('button', [0,0,150,25], "Add") //dimx4_8 [0,0,80,25]
 addBtn.alignment = 'center';
-//addBtn.indent = 110;
 addBtn.enabled = false;
 
 addMoveDelteBtns =fieldsWindow.add('group');
 addMoveDelteBtns.orientation = "row";
 addMoveDelteBtns.alignment = 'center';
-//addMoveDelteBtns.indent = 110;
 addMoveDelteBtns.but1 = addMoveDelteBtns.add('button',undefined,"Move Up");
 addMoveDelteBtns.but1.enabled = false;
 addMoveDelteBtns.but2 = addMoveDelteBtns.add('button',undefined,"Move Down");
@@ -1516,6 +1496,7 @@ addMoveDelteBtns.but4.enabled = true; //false
 message1 = fieldsWindow.add('group');
 message1.f1 = message1.add('statictext', undefined, "");
 message1.f1.preferredSize = [500,20];
+message1.indent = 110;
 message1.f1.graphics.font = ScriptUI.newFont ("Arial", "Bold", 12);
 message1.f1.graphics.foregroundColor = message1.f1.graphics.newPen (message1.f1.graphics.PenType.SOLID_COLOR, [1, 0, 0], 1);
 
@@ -1598,11 +1579,6 @@ addMoveDelteBtns.but4.onClick = function(){
     // record that a change has been made to the custom field list
     triggerEnterCustomName = true;
     }
-
-//var columns = fieldsWindow.add("group"); columns.spacing=0;
-//var fieldList = columns.add ("listbox", dimL, []);
-//fieldList.graphics.backgroundColor = fieldList.graphics.newBrush(fieldList.graphics.BrushType.SOLID_COLOR,[0,0,0], 1);
-// fieldList.helpTip="First field in the input file must be the filename only!";
     
 addBtn.onClick=function(){
         // do all field have data?
@@ -1648,13 +1624,33 @@ else{alert("All field boxes must be filled in")}
 //okToAdd==false
 } // CLOSE 
 
-// dimL = [0,0,1100,450]  [0, 0, 1080, 450]
-// create list box with five titled columns for the field components
-var fieldList =fieldsWindow.add ('ListBox', [0,0,1000,450], 'Fields',
-{numberOfColumns: 5, showHeaders: true,
+var fieldListGroup = fieldsWindow.add("group");
+fieldListGroup.orientation = 'column';
+fieldListGroup.spacing = 5;
+fieldListGroup.alignChildren = 'left';
+fieldListGroup.indent = 110;
+
+var fieldListLabel1 = fieldListGroup.add("statictext", [0,0,1000,20], "Double click a field to edit the details");
+fieldListLabel1.graphics.foregroundColor = fieldListLabel1.graphics.newPen (fieldListLabel1.graphics.PenType.SOLID_COLOR, [0.5,0.5,0.5], 1);
+
+// Field list headers
+var fieldListHeaders = fieldListGroup.add("group");
+var fieldListHeaders01 = fieldListHeaders.add ("statictext", [0,0,190,25], "Field");
+var fieldListHeaders02 = fieldListHeaders.add ("statictext", [0,0,190,25], "My Label");
+var fieldListHeaders03 = fieldListHeaders.add ("statictext", [0,0,290,25], "Namespace");
+var fieldListHeaders04 = fieldListHeaders.add ("statictext", [0,0,190,25], "XMP_Property");
+var fieldListHeaders05 = fieldListHeaders.add ("statictext", [0,0,80,25], "XMP_Type");
+for(var i = 0; i < fieldListHeaders.children.length; i++)
+fieldListHeaders.children[i].graphics.font = ScriptUI.newFont ("Arial", 'BOLD', 12);
+//fieldListHeaders.graphics.foregroundColor = fieldListHeaders.graphics.newPen (fieldListHeaders.graphics.PenType.SOLID_COLOR, [1,0.58,0], 1);
+//fieldListHeaders.graphics.backgroundColor = fieldListHeaders.graphics.newBrush(fieldListHeaders.graphics.BrushType.SOLID_COLOR,[0.2,0.2,0.2], 1);
+
+// list box with five titled columns for the field components
+var fieldList =fieldListGroup.add ('ListBox', [0,0,1000,450], 'Fields',
+{numberOfColumns: 5, showHeaders: false,
 columnTitles: ['Field', 'My Label', 'Namespace', 'XMP_Property', 'XMP_Type'], columnWidths: [200,200,300,200,80]});
 //fieldList.alignment = 'right';
-fieldList.indent = 110;
+//fieldList.indent = 110;
 // when an item in col1 is selected, enable move up, down, delete buttons
 fieldList.addEventListener ("change", function(){
     if(fieldList.selection == null) return;
@@ -1716,11 +1712,15 @@ if (lastViewedHeadersPanel.length > 0){
 
 // when list item is double clicked, open Edit Field Details window
 fieldList.onDoubleClick = function(){
-   var sel = fieldList.selection.index
-   var which = [fieldList.items[sel].text, fieldList.items[sel].subItems[0].text, fieldList.items[sel].subItems[1].text, fieldList.items[sel].subItems[2].text, fieldList.items[sel].subItems[3].text];
+var sel = fieldList.selection.index
+var which = [fieldList.items[sel].text, fieldList.items[sel].subItems[0].text, fieldList.items[sel].subItems[1].text, fieldList.items[sel].subItems[2].text, fieldList.items[sel].subItems[3].text];
 editFieldListItem = new Window('palette', "Edit Field Details");
 editFieldListItem.spacing = 20;
 editFieldListItem.alignChildren = 'left';
+
+editFieldListItemInfo1 = editFieldListItem.add('statictext', undefined, "Controlled schema - only 'My Label' can be edited")
+editFieldListItemInfo1preferredSize = [400,22];
+editFieldListItemInfo1.graphics.foregroundColor = editFieldListItemInfo1.graphics.newPen (editFieldListItemInfo1.graphics.PenType.SOLID_COLOR, [1,0.58,0], 1);
 
 editFieldListItemG1 = editFieldListItem.add('group', undefined);
 editFieldListItemG1.orientation = 'column';
@@ -1764,7 +1764,7 @@ editFieldListItemXMP_Type.et = editFieldListItemG5.add('dropdownlist', undefined
 editFieldListItemXMP_Type.et.selection = xmpTypeArr.indexOf(which[4]);
 editFieldListItemXMP_Type.et.preferredSize = [100,22]
 
-editFieldListItemSpacer = editFieldListItem.add('statictext', undefined, "")
+// editFieldListItemSpacer = editFieldListItem.add('statictext', undefined, "")
 
 editFieldListItemButtons = editFieldListItem.add('group', undefined);
 editFieldListItemButtons.orientation = 'row';
@@ -1780,12 +1780,14 @@ if(which[0] == "Custom"){
      editFieldListItemNamespace.et.enabled = true;
     editFieldListItemXMP_Property.et.enabled = true;
     editFieldListItemXMP_Type.et.enabled = true;
+    editFieldListItemInfo1.visible = false;
     }
 else{
        // editFieldListItemLabel.et.enabled = true;
     editFieldListItemNamespace.et.enabled = false;
     editFieldListItemXMP_Property.et.enabled = false;
     editFieldListItemXMP_Type.et.enabled = false;
+    editFieldListItemInfo1.visible = true;
     }
 editFieldListItemButtons.but1.onClick = function(){
 //whichOneObj.Label = editFieldListItemLabel.et.text
@@ -1808,6 +1810,7 @@ editFieldListItemButtons.but2.onClick = function(){
     }
 
 editFieldListItem.show();
+editFieldListItem.active = true;
 } // CLOSE fieldList.onDoubleClick
 
 // footer buttons
@@ -1851,6 +1854,7 @@ footerBtns.but2.onClick = function(){
     fieldsWindow.hide();
   // fieldsWindow.close(); // causes fieldsWindow to not re-open after Cancel, so MOVED to mainWindow.onClose()
     mainWindow.enabled = true;
+    mainWindow.active = true;
     }
 
 function saveCustomHeaders(){
@@ -1864,6 +1868,7 @@ if (triggerEnterCustomName == false){
     fieldsWindow.hide();
   //  fieldsWindow.close(); // causes fieldsWindow to not re-open after Cancel, so MOVED to mainWindow.onClose()
    mainWindow.enabled = true;
+   mainWindow.active = true;
     };
 else{
 var enterCustomName = new Window('dialog', "Save Custom Fields");
@@ -1890,13 +1895,15 @@ var enterCustomName = new Window('dialog', "Save Custom Fields");
         loadCustom.et1.text = "Current Fields: "+lastViewedHeadersPanel;
         fieldsWindow.hide();
         mainWindow.enabled = true;
+        mainWindow.active = true;
          exportBtn.enabled = true;
         // fieldsWindow.close(); // causes fieldsWindow to not re-open after Cancel, so MOVED to mainWindow.onClose()    
         }
     else{alert("Give this custom field list a unique name so you ca find it later")}
         }
     enterCustomNameCancel.onClick = function(){enterCustomName.close()}
-    enterCustomName.show();  
+    enterCustomName.show();
+    enterCustomName.active = true;
     }
 };
 
@@ -1917,7 +1924,7 @@ function writeCustomHeadersToFile(){
 footerBtns.but1.onClick = function(){
     saveCustomHeaders();
     }
-fieldsWindow.onClose = function(){mainWindow.enabled = true;}
+fieldsWindow.onClose = function(){mainWindow.enabled = true; mainWindow.active = true;}
 //////////////////////////////////////////////////////////////// END BUILD PROPERTIES WINDOW ////////////////////////////////////////////////////////////////
 
 // BEGIN FUNCTIONS
@@ -2067,12 +2074,12 @@ var currentFolderPath = exportWhich.folderEt.text.substr(0,splicePathIndex1+1).s
 
     if (Folder.fs == "Windows"){
          // var exportSaveLocation = desktop+"embedded_metadata_"+dateYMD+".txt";
-        var exportSaveLocation = "~\\Desktop\\"+currentFolder+"_METADATA_"+dateYMD+".txt"; //   dateTime  OR dateYMD
+        var exportSaveLocation = "~\\Desktop\\"+currentFolder+"_"+lastViewedHeadersPanel+"_metadata_"+dateYMD+".txt";
         // var exportSaveLocation = currentPath+"_METADATA_"+dateYMD+".txt"; // let user select save location, filename based on current folder
         }
     else{
         // var exportSaveLocation = desktop+"embedded_metadata_"+dateYMD+".txt";
-        var exportSaveLocation = "~/Desktop/"+currentFolder+"_METADATA_"+dateYMD+".txt"; // dateTime OR dateYMD
+        var exportSaveLocation = "~/Desktop/"+currentFolder+"_"+lastViewedHeadersPanel+"_metadata_"+dateYMD+".txt"; // dateTime OR dateYMD
         // var exportSaveLocation = currentFolder+"_METADATA_"+dateYMD+".txt"; // let user select save location, filename based on current folder
         }
   //  var currentPathSaveFile = currentPath+"_"+dateYMD+".txt";  save to same folder as images being exported, filename based on current folder
@@ -2154,6 +2161,7 @@ var currentFolderPath = exportWhich.folderEt.text.substr(0,splicePathIndex1+1).s
 	// if "Include subfolders" is not checked, only read the files in the selected folder
 	if (exportWhich.folderRb.value == true && exportWhich.subfoldersCb.value == false){
 		locateFilesProgress.show();
+		locateFilesProgress.active = true;
 		getFolder(selectedFolder);
 		locateFilesProgress.hide();
         locateFilesProgress.close();
@@ -2162,6 +2170,7 @@ var currentFolderPath = exportWhich.folderEt.text.substr(0,splicePathIndex1+1).s
 	// if "Include subfolders" is checked, read all the files in the selected folder and its subfolders
 	if (exportWhich.folderRb.value == true && exportWhich.subfoldersCb.value == true){
 		locateFilesProgress.show();
+		locateFilesProgress.active = true;
 		getSubFolders(selectedFolder);
 		locateFilesProgress.hide();
         locateFilesProgress.close();
@@ -2198,15 +2207,16 @@ for (var L1 = 0; L1 < customFileArr.length; L1++){
 				   exportProgress.X.value = (L2 / Thumb.length) * 100;
 				   exportProgress.center();
 				   exportProgress.show();
+				   exportProgress.active = true;
 				}
              // start reading each file (Thumb)
 			if (Thumb[L2]){                  
              // get just the file name from allFiles so we can compare it to the file name in the text file
                 if (exportWhich.folderRb.value == true){
-                    var splicePathIndex = allFiles[L2].fsName.toString().lastIndexOf ("\\");
+                    var splicePathIndex = allFiles[L2].fsName.toString().lastIndexOf (slash); // was "\\"
                     }
                 else{
-                    var splicePathIndex = Thumb[L2].spec.toString().lastIndexOf ("/");
+                    var splicePathIndex = Thumb[L2].spec.toString().lastIndexOf ("/"); // slash doesn't work - "/" works for Windows and Mac
                     }
 			 /* // TODO: disabled becasue Mac requires ".lastIndexOf ("/")" the same as Windows - use new doubled version below?
 				 if (Folder.fs == 'Windows'){
@@ -2607,10 +2617,10 @@ var path = fieldsArr[L1].XMP_Property.slice(fieldsArr[L1].XMP_Property.indexOf("
 		complete.problem.orientation = 'column';	
 		complete.problem.maximumSize = [0, 0];
 		complete.problem.header = complete.problem.add('statictext', undefined, "But...");
-		complete.problem.msg = complete.problem.add('statictext', undefined, "There was a problem exporting data from "+fileFailArr.length+" images.");
+		complete.problem.msg = complete.problem.add('statictext', undefined, "There was a problem exporting data from "+fileFailArr.length+" images");
 		complete.problem.btn=  complete.problem.add('button', undefined, "Which files?");
 		complete.problem.btn.onClick = showProblems;
-		complete.problem.msg2 = complete.problem.add('statictext', undefined, "The metadata structure may be invalid. Try opening and saving the file(s) in Photoshop and exporting again.", {multiline:true});
+		complete.problem.msg2 = complete.problem.add('statictext', undefined, "The metadata structure may be invalid. Try opening and saving the file(s) in Photoshop and exporting again", {multiline:true});
 		complete.problem.msg2.minimumSize = [350, 40];
         complete.problem.msg2.maximumSize = [350, 40];
 
@@ -2625,6 +2635,7 @@ var path = fieldsArr[L1].XMP_Property.slice(fieldsArr[L1].XMP_Property.indexOf("
 				problems.hide();
 				}
 			problems.show();
+			problems.active = true;
 			}
 		// Continue button
 		complete.okBtn = complete.add('button', undefined, "Continue");
@@ -2633,6 +2644,7 @@ var path = fieldsArr[L1].XMP_Property.slice(fieldsArr[L1].XMP_Property.indexOf("
 			}
 			} // close export brace 1
 		complete.show();
+		complete.active = true;
 
 		if(filePass == 0)
             {             
@@ -2777,6 +2789,7 @@ var textFileNameArr = [];
 		// if "Include subfolders" is not checked, only read the files in the selected folder
 		if (imageLocSubfoldersCb.value == false){
 			locateFilesProgress.show();
+			locateFilesProgress.active = true;
 			getFolder(selectedFolder);
 			locateFilesProgress.hide();
              locateFilesProgress.close();
@@ -2785,6 +2798,7 @@ var textFileNameArr = [];
 		// if "Include subfolders" is checked, read all the files in the selected folder and its subfolders 
 		if (imageLocSubfoldersCb.value == true){
 			locateFilesProgress.show();
+			locateFilesProgress.active = true;
 			getSubFolders(selectedFolder);
 			locateFilesProgress.hide();
              locateFilesProgress.close();
@@ -2845,8 +2859,8 @@ var textFileNameArr = [];
                 app.beep();     
                 var duplicatesFound = new Window('dialog', "Duplicates"); 
                 duplicatesFound.alignChildren = 'left';
-                var duplicatesFoundHeaderValue = "Duplicate filenames have been found, preventing the import from running."
-                textDuplicatesHeader = duplicatesFound.add('statictext', [0, 0, 500, 20], duplicatesFoundHeaderValue);
+                var duplicatesFoundHeaderValue = "Duplicate filenames have been found, preventing the import from running"
+                textDuplicatesHeader = duplicatesFound.add('statictext', [0,0,500,20], duplicatesFoundHeaderValue);
 		// test info window	
 	//	var testMessage = duplicatesFound.add('edittext', [0,0,300,500], "",{multiline:true});
                 // list of duplicates in text file
@@ -2868,7 +2882,7 @@ var textFileNameArr = [];
                     duplicateImages.write (txtFileNameDupes.join("\n"));
                     // Close the file
                     duplicateImages.close();
-                    Window.alert ("A new file named:\n\n"+dupesInText+"\n\nhas been created on your desktop.", "Success!")						
+                    Window.alert ("A new file named:\n\n"+dupesInText+"\n\nhas been created on your desktop", "Success!")						
                     };
                 var duplicatesOptionsValue = 
                 "Your options are:\n"+
@@ -2878,7 +2892,7 @@ var textFileNameArr = [];
                 "  •  Select a subfolder that has no duplicates\n"+
                 "  •  Move duplicates so they are not in subfolders of the selected parent folder\n"+
                 "  •  Rename duplicates";
-                duplicatesOptions = duplicatesFound.add('statictext', [0, 0, 800, 120], duplicatesOptionsValue, {multiline:true});             
+                duplicatesOptions = duplicatesFound.add('statictext', [0,0,800,120], duplicatesOptionsValue, {multiline:true});             
             // Close button
             duplicatesFound.cancelBtn = duplicatesFound.add('button', undefined, "Close");
             duplicatesFound.cancelBtn.alignment = 'center';
@@ -2886,6 +2900,7 @@ var textFileNameArr = [];
                 duplicatesFound.hide();
                 }
                 duplicatesFound.show();
+                duplicatesFound.active = true;
                 return false; 
                 }
             } // END dulplicates test 
@@ -2958,10 +2973,8 @@ var textFileNameArr = [];
             app.beep();
             var duplicatesFound = new Window('dialog', "Duplicates"); 
             duplicatesFound.alignChildren = 'left';
-            var duplicatesFoundHeaderValue = "Duplicate filenames have been found, preventing the import from running."
-            textDuplicatesHeader = duplicatesFound.add('statictext', [0, 0, 500, 20], duplicatesFoundHeaderValue);
-// test info window	
-		//var testMessage = duplicatesFound.add('edittext', [0,0,300,500], "",{multiline:true});
+            var duplicatesFoundHeaderValue = "Duplicate filenames have been found, preventing the import from running"
+            textDuplicatesHeader = duplicatesFound.add('statictext', [0,0,500,20], duplicatesFoundHeaderValue);
             // list of duplicates in text file
             if(txtFileNameDupes.length > 0){ 	
                 textDuplicates = duplicatesFound.add('panel', undefined, "Duplicates in selected text file");
@@ -2984,7 +2997,7 @@ var textFileNameArr = [];
             duplicateImages.write (txtFileNameDupes.join("\n"));
             // Close the file
             duplicateImages.close();
-            Window.alert ("A new file named:\n\n"+dupesInText+"\n\nhas been created on your desktop.", "Success!")						
+            Window.alert ("A new file named:\n\n"+dupesInText+"\n\nhas been created on your desktop", "Success!")						
             };
         
      /*           var textDuplicatesOptionsValue = 
@@ -2995,7 +3008,7 @@ var textFileNameArr = [];
                 "  •  Select a subfolder that has no duplicates\n"+
                 "  •  Move duplicates so they are not in subfolders of the selected parent folder\n"+
                 "  •  Rename duplicates";
-                textDuplicatesOptions = textDuplicates.add('statictext', [0, 0, 800, 120], textDuplicatesOptionsValue, {multiline:true});
+                textDuplicatesOptions = textDuplicates.add('statictext', [0,0,800,120], textDuplicatesOptionsValue, {multiline:true});
                 */
                 }
             // list of duplicates in folder include subfolders
@@ -3004,7 +3017,6 @@ var textFileNameArr = [];
                 folderDuplicates.spacing = 3;
                 folderDuplicates.alignChildren = 'left';
                 folderPath = folderDuplicates.add('statictext', [0,0,800,20], imageLoc.text+" ... and subfolders");
-            //    folderDuplicatesList = folderDuplicates.add ('ListBox', [0, 0, 800, 150], duplicatesWithPath);
                 folderDuplicatesBtn = folderDuplicates.add('button', undefined, "Save list of duplicates to desktop");
                 folderDuplicatesBtn.onClick = function(){
                 // Create a text file on the desktop with only the headers.  This can be used as a template in Excel to create properly formatted text for the import function    
@@ -3018,7 +3030,7 @@ var textFileNameArr = [];
                 duplicateImages.write (duplicatesWithPath.join("\n"));
                 // Close the file
                 duplicateImages.close();
-                Window.alert ("A new file named:\n\n"+dupesInFolder+"\n\nhas been created on your desktop.", "Success!")						
+                Window.alert ("A new file named:\n\n"+dupesInFolder+"\n\nhas been created on your desktop", "Success!")						
                 };
 
              /*   var folderDuplicatesOptionsValue = 
@@ -3038,7 +3050,7 @@ var textFileNameArr = [];
                 "  •  Select a subfolder that has no duplicates\n"+
                 "  •  Move duplicates so they are not in subfolders of the selected parent folder\n"+
                 "  •  Rename duplicates";
-                duplicatesOptions = duplicatesFound.add('statictext', [0, 0, 800, 120], duplicatesOptionsValue, {multiline:true});
+                duplicatesOptions = duplicatesFound.add('statictext', [0,0,800,120], duplicatesOptionsValue, {multiline:true});
                 }
             // Close button
             duplicatesFound.cancelBtn = duplicatesFound.add('button', undefined, "Close");
@@ -3047,6 +3059,7 @@ var textFileNameArr = [];
                 duplicatesFound.hide();
                 }
              duplicatesFound.show();
+             duplicatesFound.active = true;
              return false; 
              } // close if(out.length > 0 || txtFileNameDupes.length > 0)
          
@@ -3079,6 +3092,7 @@ var textFileNameArr = [];
 				importingProgress.progBar.value = Math.round ((L3 / allFiles.length) * 100);  
 				  importingProgress.center();
 				  importingProgress.show();
+				  importingProgress.active = true;
 			 }
   
       //   if (allFiles[L3].hasMetadata)       
@@ -3444,7 +3458,7 @@ catch(couldNotCloseError){couldNotClose.push(allFiles[L3])}
                     complete.spacing = 3;
                     complete.alignChildren = 'center';
                     complete.header = complete.add('statictext', undefined, "Success!");
-                    complete.msg1= complete.add('statictext', undefined, "Data has been successfully imported for " + filePass + " files.");
+                    complete.msg1= complete.add('statictext', undefined, "Data has been successfully imported for " + filePass + " files");
                     complete.msg1.preferredSize = [400,40];
                      complete.msg1.justify = 'center';
                     // List of files that could not be opened to write metadata
@@ -3454,7 +3468,7 @@ catch(couldNotCloseError){couldNotClose.push(allFiles[L3])}
                     complete.problem1.header = complete.problem1.add('statictext', undefined, "But...");
                     complete.problem1.header.graphics.font = ScriptUI.newFont ('Arial', 'BOLD', 16);
                     complete.problem1.msg1 = complete.problem1.add('statictext', undefined, "These files could not be opened for import.\nThey might be corrupted or have an incompatable data structure.");
-                    complete.problem1.list = complete.problem1.add ('edittext', [0, 0, 500, 150], couldNotOpen.join("\n"), {multiline:true});
+                    complete.problem1.list = complete.problem1.add ('edittext', [0,0,500,150], couldNotOpen.join("\n"), {multiline:true});
 
 				// If there are files that couln't be opened, make problem1 visible		
                     if (fileFailArr.length > 0){
@@ -3464,7 +3478,8 @@ catch(couldNotCloseError){couldNotClose.push(allFiles[L3])}
                     complete.okBtn.onClick =  function(){ 
 					complete.hide();
 					}
-                complete.show();		
+                complete.show();
+                complete.active = true;		
 			}
         }  
     } // close function importFromFile()
