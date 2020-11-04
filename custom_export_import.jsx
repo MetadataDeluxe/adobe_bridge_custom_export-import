@@ -27,7 +27,7 @@ SOFTWARE.
 // Change these to make the script yours
 var projectName1 = "Metadata Deluxe" // human friendly
 var projectName2 = "Metadata_Deluxe" // computer friendly.  filenames - don't use spaces, use camelCase or _ or -
-var plgnVers = "1.0";
+var plgnVers = "1.0.1";
 var codeVers = "2020-11-02"
 
 { // brace 1 open
