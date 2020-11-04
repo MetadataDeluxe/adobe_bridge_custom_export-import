@@ -233,7 +233,7 @@ var UPprefsVersion = '2.0.9'; //always increment with preference file changes
    
 //////////////////////////////////////////////////////////////// BEGINNING OF MAIN UI WINDOW ////////////////////////////////////////////////////////////////
 		// Create the main dialog box
-		var mainWindow = new Window('palette', projectName1+" Export-Import - code version: "+plgnVers+" ("+codeVers+")");
+		var mainWindow = new Window('palette', projectName1+" Export-Import - version "+plgnVers);
 		{ //  main UI window - brace 1 open
             // header
             settingsGroup = mainWindow.add('group', undefined, undefined)
