@@ -24,13 +24,61 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING OUT OF O
 SOFTWARE.
 */
 
-// Change these to make the script yours
-var projectName1 = "Metadata Deluxe" // human friendly
-var projectName2 = "Metadata_Deluxe" // computer friendly.  filenames - don't use spaces, use camelCase or _ or -
-var plgnVers = "1.0.1";
-var codeVers = "2020-11-02"
-
 { // brace 1 open
+// Change these to make the script yours
+var projectName1 = "Metadata Deluxe"; // human friendly
+var projectName2 = "Metadata_Deluxe"; // computer friendly.  filenames - don't use spaces, use camelCase or _ or -
+var plgnVers = "1.0.2";
+var codeVers = "2021-02-13";
+// added .hide() to all palette .close(), fixed Mapping display; changed export file name to current foler+dateYMD; replaced type with xmpType; replaced header with label
+// changed field arr to new style; using indexOf to remove prefix from XMP_Property for read/write; fixed fieldList.add to use dropdown field text
+// added new build properties; added populate fields list based on lastViewedHeadersPanel; register namespaces from lastViewedHeadersPanel
+// added try catch to loadCustom.but1.onClick
+// added originalLastViewedHeadersPanel and originalCustomFileText so original values can be restored when custom fields window Cancel is clicked
+// added set load standard schema dropdown to "" when Clear is clicked
+// moved var exportSaveLocation within export function
+// added var customFileArr = customFileText.split("\n") to import function
+// changed the way images folder location is determined and displayed - added expImp_thumbSelected as eventHandler, delete this handler on window close
+// added basicFieldsArr; added; if(textFile[textFile.length-1].length == 0) to if "Match on filename" is selected check that column B has a value, else show alert
+// added to loadSchema.dd1.onChange: if(schemaArr[Lls].Schema_Field != "File-Name") to avoid double File-Name properties
+// changed fieldsArr item Field: to Schema_Field:
+// fieldsWindow.close(); // causes fieldsWindow to not re-open after Cancel, so MOVED to mainWindow.onClose()
+// changed "Add" button function so new field is inserted below currently selected filed in the list
+// function saveCustomHeaders(){ - added mainWindow.enabled = true;
+// saveCustomHeaders(){ - moved change custom fields label on main window within if(enterCustomNameName.text){
+// var pos = 0 - added condition based on number of items in list
+// 2019-12-01 addBtn.onClick=function(){ - added var itemSelectedIndex = fieldList.items.length-1; set selected item to new added field
+// experimenting with multi-column fields fieldList. See addMoveDelteBtns.but1.onClick
+// changed pluginPrefs to projectName2
+// changed var fieldList2 to var fieldList
+// testing github
+// changed import currentPath to use any thumb, not just image file
+// changed export complete text to reflect 0 files exported
+// Export entire folder was failing - changed  FROM if (testFileExtension(Thumb[L2].spec) == false) TO if (testFileExtension(Thumb[L2]) == false) 
+// changed import paths to use .spec.fsName  search for PATH EDIT.  Custom list UNDEFINED on open now - need to fix - check lastViewedHeadersPanel  SEE app.document.presentationPath.split(slash).join("/")+"/";
+// added appDataPlgnSet.encoding = "UTF8"; to write CJK to prefs text file
+// line 2004 changed var currentFolderPath
+// EXPORT & IMPORT, changed to .presentationPath - var currentFolderPath = app.document.presentationPath;  // PATH EDIT
+// IMPORT, changed var selectedFolder = Folder(currentFolderPath) to var selectedFolder = Folder(currentFolder)
+// IMPORT changed if (testFileExtension(Thumb[L2]) == false) // failing on selectedThumnails TO if (testFileExtension(singleFile) == false) 
+// EXPORT added condition "if entire folder is selected"  if "Include subfolders" is not checked, only read the files in the selected folder TODO: do I need to add anything when selected thumbs is selected? - progress bar? allFiles no longer needed?
+// Changed "Fields: " to "Current Fields: "
+// EXPORT and IMPORT function getSubFolders: added condition  && myFile.getFiles().length > 0 because empty sub-folders caused the script to stall
+// Customize fields: if no custom fields definedm then exportBtn.enabled = false, else exportBtn.enabled = true
+// all fields to fieldList.onDoubleClick window
+// added enterCustomNameName.text = lastViewedHeadersPanel;
+// added editFieldsPrompt window (if no fields list exists, open a new window to prompt user to edit the fields list)
+// added disable loadCustom.but1 if Current Fileds: UNDEFINED (enable after saving custom fields)
+// added separate headers group to fieldList for readability
+// added .active = true; every time a window is returned to (otherwise it would not be active on a Mac)
+// adjusted UI dimensions for Mac
+// 2020-10-27 changed var splicePathIndex = allFiles[L2].fsName.toString().lastIndexOf (slash);  was ("\\")
+// 2020-10-30 changed import files path section; updated help tips; added currentFields to export .txt filename
+// 2020-11-02 function toggleImportBtn(){ // removed importImageFolderOK == true && ; dataSourceFileAlert changed text color to red
+// 2020-11-17 removed var xmpLib = new ExternalObject("lib:" + pathToXMPLib );  not needed
+// 2021-02-12: added ai and xd to function testFileExtension(file)
+// 2021-02-13 changed to xmpLib == undefined to ExternalObject.AdobeXMPScript == undefined; simplified Load the XMP Script library; changed to  // FASTER read and write methods; removed ImportInst.templateBtn and changed ImportInst.text
+
 
 //Create a menu option within Adobe Bridge
 var findProjectMenu = MenuElement.find (projectName2);
@@ -42,17 +90,10 @@ projectName2ExpImp.onSelect = function()
 
 	{ // brace 2 open
      // Load the XMP Script library
-     if( xmpLib == undefined ){
-          if( Folder.fs == "Windows" ){
-               var pathToXMPLib = Folder.startup.fsName + "/AdobeXMPScript.dll";
-			}
-          else{
-               var pathToXMPLib = Folder.startup.fsName + "/AdobeXMPScript.framework";
-			}
-          var libfile = new File( pathToXMPLib );
-          var xmpLib = new ExternalObject("lib:" + pathToXMPLib );
-		}
-    
+    if ( ExternalObject.AdobeXMPScript == undefined ) {
+        ExternalObject.AdobeXMPScript = new ExternalObject( "lib:AdobeXMPScript" );
+    }
+ 
 // TODO different way to identify user prefs folder
 /*
 var userF = Folder.userData; //User library
@@ -63,8 +104,8 @@ var UPprefsPath = ''; //path to preferences file
 var UPprefsVersion = '2.0.9'; //always increment with preference file changes
 */   
  
-	// variables  used throughout the code
-    // Don't change these unless you really don't like them
+	// variables  used throughout
+    // Don't change these
 	var plgnName = ""+projectName1+" Metadata Export-Import";
 	var appDataFwdSlash = Folder.userData;
 	var plgnPrefs = "/"+projectName2+"_Import_Export";
@@ -428,16 +469,15 @@ var UPprefsVersion = '2.0.9'; //always increment with preference file changes
 				}
 			else{
 				ExportInstText.preferredSize = [700, 500];
-				}
-            
-            ExportInst.optionsBtn = ExportInst.add('button', undefined, 'Export options');
-            ExportInst.optionsBtn.onClick = function(){showExportOptInst()}
-             ExportInst.optionsBtn.alignment = 'left'         
-               ExportInst.cancelBtn = ExportInst.add('button', undefined, 'Close');
-			ExportInst.cancelBtn.onClick =  function(){ 
-				ExportInst.hide();
-                ExportInst.close();
-                mainWindow.active = true;
+				}        
+                    ExportInst.optionsBtn = ExportInst.add('button', undefined, 'Export options');
+                    ExportInst.optionsBtn.onClick = function(){showExportOptInst()}
+                    ExportInst.optionsBtn.alignment = 'left'         
+                    ExportInst.cancelBtn = ExportInst.add('button', undefined, 'Close');
+                    ExportInst.cancelBtn.onClick =  function(){ 
+                    ExportInst.hide();
+                    ExportInst.close();
+                    mainWindow.active = true;
 				}
                ExportInst.show();
                ExportInst.active = true;
@@ -467,48 +507,50 @@ var UPprefsVersion = '2.0.9'; //always increment with preference file changes
 			else{
 				exportOptInstText.preferredSize = [700,280];
 				}
-               exportOptInst.cancelBtn = exportOptInst.add('button', undefined, 'Close');
-			exportOptInst.cancelBtn.onClick =  function(){ 
-				exportOptInst.hide();
+                exportOptInst.cancelBtn = exportOptInst.add('button', undefined, 'Close');
+                exportOptInst.cancelBtn.onClick =  function(){ 
+                exportOptInst.hide();
                 exportOptInst.close();
 				}
                exportOptInst.show();
                exportOptInst.active = true;
 			}
  
-		// Panel for Import section
-		importPanel = mainWindow.row.add('panel', undefined, "Import Metadata");
-		importPanel.margins = 3;
-		importPanel.alignChildren = 'center';
-          importPanel.minimumSize = hidden
-        importPanel.maximumSize = hidden
-		// Info button
-		importInstButton = importPanel.add('button', undefined, '?');
-		importInstButton.preferredSize = buttonSize1
-     importInstButton.alignment = 'right';
-		importInstButton.helpTip = clickInstrucTT;
-		importInstButton.onClick = function showImportInst(){
-			var ImportInst = new Window('palette', "Import Instructions"); 
-			ImportInst.body = ImportInst.add('group');
-			ImportInst.body.orientation = 'column';
-			ImportInst.body.spacing = 5;
+            // Panel for Import section
+            importPanel = mainWindow.row.add('panel', undefined, "Import Metadata");
+            importPanel.margins = 3;
+            importPanel.alignChildren = 'center';
+            importPanel.minimumSize = hidden
+            importPanel.maximumSize = hidden
+            // Info button
+            importInstButton = importPanel.add('button', undefined, '?');
+            importInstButton.preferredSize = buttonSize1
+            importInstButton.alignment = 'right';
+            importInstButton.helpTip = clickInstrucTT;
+            importInstButton.onClick = function showImportInst(){
+            var ImportInst = new Window('palette', "Import Instructions"); 
+            ImportInst.body = ImportInst.add('group');
+            ImportInst.body.orientation = 'column';
+            ImportInst.body.spacing = 5;
 			   
             var text1 =
             "This script imports data from a tab delimited text file into image files with matching filenames.\n\n" +
-              "      If you have already exported metadata and edited it in Excel and want to import it back in:\n" +
-			"         1. Select the folder containing the target images\n" +
-			"              a. If you have nested folders, check 'include subfolders'\n" +
-			"         2. Select the text file to be imported\n" +
-			"              a. Click 'Import' and cross your fingers\n\n" +
-			"     If you are starting with external metadata (from a database, etc.)\n" +
-			"         First, you need a properly formatted template.\n"+
-            "           This template lists all available IPTC fields and you can import data  into any IPTC field:";
-
-			var text2 =			 
-			"             Look for this new file on your desktop\n" +
-			"                1. Open the text file in Excel\n" +
-			"                2. Add data to the appropriate columns\n" +
-			"                3. Save as a tab-delimited text file\n\n" +
+            "      If you have already exported metadata and edited it in Excel and want to import it back in:\n" +
+            "         1. Select the folder containing the target images\n" +
+            "              a. If you have nested folders, check 'include subfolders'\n" +
+            "         2. Select the text file to be imported\n" +
+            "              a. Click 'Import' and cross your fingers\n\n" +
+            "     If you are starting with external metadata (from a database, etc.)\n" +
+            "         First, you need a properly formatted spreadsheet.\n"+
+            "              Open the Export window and export the files you want to work on.\n" +
+            "              Import this text file into a spreadsheet.\n" +
+            "              This will give you the file names and columns to enter your metadata into."		 
+            "              Look for this new file on your desktop\n" +
+            "                   1. Open the text file in Excel\n" +
+            "                   2. Add data to the appropriate columns\n" +
+            "                   3. Save as a tab-delimited text (.txt) file\n" +
+            "                        a. Format as Unicode UTF-8 or 16\n\n"
+            var text2 =	
 			"      To import data into image files:\n" +
 			"         1. Select the folder containing the target images\n" +
 			"              a. If you have nested folders, check 'include subfolders'\n" +
@@ -517,22 +559,24 @@ var UPprefsVersion = '2.0.9'; //always increment with preference file changes
    
 			ImportInst.text1 = ImportInst.body.add('statictext', undefined, text1, {multiline:true});
 			if (Folder.fs == "Windows"){
-				ImportInst.text1.preferredSize = [540,160];
+				ImportInst.text1.preferredSize = [540,200];
 				}
 			else{
-				ImportInst.text1.preferredSize = [620,200];
-				}			
+				ImportInst.text1.preferredSize = [620,240];
+				}		
+            /* not used
 			ImportInst.templateBtn = ImportInst.body.add ('button', undefined, "Create "+projectName2+"_import_default template.txt");
 			ImportInst.templateBtn.helpTip = createTemplateTT;
 			ImportInst.templateBtn.alignment = 'left';
 			ImportInst.templateBtn.indent = 50;
 			ImportInst.templateBtn.onClick  = createTemplate; 
+            */
 			ImportInst.text2 = ImportInst.body.add('statictext', undefined, text2, {multiline:true});
 			if (Folder.fs == "Windows"){
-				ImportInst.text2.preferredSize = [540,150];
+				ImportInst.text2.preferredSize = [540,110];
 				}
 			else{
-				ImportInst.text2.preferredSize = [620,170];
+				ImportInst.text2.preferredSize = [620,130];
 				}
             ImportInst.optionsBtn = ImportInst.add('button', undefined, 'Import options');
             ImportInst.optionsBtn.onClick = function(){showImportOptInst();}
@@ -576,31 +620,31 @@ var UPprefsVersion = '2.0.9'; //always increment with preference file changes
                importOptInst.active = true;
 			}
         
-		// Select image files location
-		imageLocBox = importPanel.add('panel', undefined, "Import to files in selected folder");
-		imageLocBox.spacing = 2;
-        imageLocBox.margins = 5;     
-        imageLocBox.alignment = 'left';      
-         // Spacer
-		spacer3 = imageLocBox.add( 'group' );
-		spacer3.minimumSize = [100, 10]
-        // folder path of files to be imported to
-		imageLocGroup = imageLocBox.add('group');
-		imageLocGroup.orientation = 'row';
-        imageLocGroup.spacing = 2;
-		imageLoc = imageLocGroup.add('statictext', undefined, "");
-		imageLoc.preferredSize = textSize2;
-		imageLoc.helpTip = imageFolderPath;
-        /* no longer used - folder navigation is done in Bridge UI
-		//imageLocBrowse = imageLocGroup.add('button', undefined, "Browse");
-		//imageLocBrowse.helpTip = imageFolderBrowse;
-		imageLocAlert = imageLocBox.add('statictext', undefined, "? Folder not found.  Keep looking.");
-		imageLocAlert.alignment = 'left';
-		imageLocAlert.justify = 'left';
-		imageLocAlert.indent = 20;
-        imageLocAlert.preferredSize = textSize1
-	imageLocAlert.visible = false
-    */
+            // Select image files location
+            imageLocBox = importPanel.add('panel', undefined, "Import to files in selected folder");
+            imageLocBox.spacing = 2;
+            imageLocBox.margins = 5;     
+            imageLocBox.alignment = 'left';      
+            // Spacer
+            spacer3 = imageLocBox.add( 'group' );
+            spacer3.minimumSize = [100, 10]
+            // folder path of files to be imported to
+            imageLocGroup = imageLocBox.add('group');
+            imageLocGroup.orientation = 'row';
+            imageLocGroup.spacing = 2;
+            imageLoc = imageLocGroup.add('statictext', undefined, "");
+            imageLoc.preferredSize = textSize2;
+            imageLoc.helpTip = imageFolderPath;
+            /* no longer used - folder navigation is done in Bridge UI
+            //imageLocBrowse = imageLocGroup.add('button', undefined, "Browse");
+            //imageLocBrowse.helpTip = imageFolderBrowse;
+            imageLocAlert = imageLocBox.add('statictext', undefined, "? Folder not found.  Keep looking.");
+            imageLocAlert.alignment = 'left';
+            imageLocAlert.justify = 'left';
+            imageLocAlert.indent = 20;
+            imageLocAlert.preferredSize = textSize1
+            imageLocAlert.visible = false
+            */
     
 	/*  
         not using this anymore - now using current folder selected in Bridge (user can navigate to another folder in Bridge and the import location will be updated)
@@ -1984,7 +2028,7 @@ app.eventHandlers.push( {handler:expImp_thumbSelected} );
 	// check for valid file type i.e. jpg, jpeg, tif, etc.
     function testFileExtension(file) {
        return file instanceof File &&
-          file.name.match(/\.(ai|avi|bmp|dng|flv|gif|indd|indt|jpe?g|mp2|mp3|mp4|mov|pdf|png|psd|swf|tiff?|wav|wma|wmv|xmp)$/i) != null;
+          file.name.match(/\.(ai|avi|bmp|dng|flv|gif|indd|indt|jpe?g|mp2|mp3|mp4|mov|pdf|png|psd|swf|tiff?|wav|wma|wmv|xmp|xd)$/i) != null;
         }  
 	// check that filename does not begin with "."
 	function testFilePrefix(file) {
@@ -2256,11 +2300,17 @@ for (var L1 = 0; L1 < customFileArr.length; L1++){
                         }
                     else{
                         // if file is not an .xmp sidecar pull XMP from file
-
+                  /*
                         var xmpFile = new XMPFile(singleFile.fsName, XMPConst.UNKNOWN, XMPConst.OPEN_FOR_READ);
 					 xmpFile.encoding = "UTF8 BOM";
                         // convert to xmp
-                        var xmpData = xmpFile.getXMP();                   
+                        var xmpData = xmpFile.getXMP();          
+                        */
+// FASTER
+app.synchronousMode = true;
+var xmpFile = new Thumbnail(new File(singleFile));
+var md = xmpFile.synchronousMetadata;
+var xmpData = new XMPMeta(md.serialize());
                         }
                     }
                     catch(couldNotOpenError){}
@@ -2434,8 +2484,7 @@ var path = fieldsArr[L1].XMP_Property.slice(fieldsArr[L1].XMP_Property.indexOf("
       //  prop =  xmpData.countArrayItems('http://ns.adobe.com/tiff/1.0/', "BitsPerSample")
      //   prop =  xmpData.getArrayItem('http://ns.adobe.com/tiff/1.0/', "BitsPerSample", 1) 
     //   prop =  xmpData.getArrayItem('http://ns.adobe.com/exif/1.0/', "ISOSpeedRatings", 1)
-       prop = xmpData.getProperty('http://ns.adobe.com/tiff/1.0/', "BitsPerSample[1]")
-    //  prop =  xmpData.getProperty('http://ns.adobe.com/tiff/1.0/', "BitsPerSample[1]")
+       prop = xmpData.getProperty(XMPConst.NS_TIFF, "BitsPerSample[1]")
         }
         catch(propFail){propFail++}
 	}
@@ -2444,7 +2493,7 @@ var path = fieldsArr[L1].XMP_Property.slice(fieldsArr[L1].XMP_Property.indexOf("
     // File-Resolution
       if(fieldsArr[L1].Schema_Field == 'File-Resolution'){
         try  {
-            Res = xmpData.getProperty( 'http://ns.adobe.com/tiff/1.0/', "XResolution") // TODO: find way to read directly from file
+            Res = xmpData.getProperty( XMPConst.NS_TIFF, "XResolution") // TODO: find way to read directly from file
             // separate the value before the "/" from the value after it to do division
             var forwardSlashIndex = Res.toString().lastIndexOf ("/")
             // value before the "/"
@@ -2472,7 +2521,7 @@ var path = fieldsArr[L1].XMP_Property.slice(fieldsArr[L1].XMP_Property.indexOf("
     // File-Color Mode
     if(fieldsArr[L1].Schema_Field == 'File-Color Mode'){
         try {
-            prop = xmpData.getProperty ("http://ns.adobe.com/photoshop/1.0/", "ColorMode") // TODO: find way to read directly from file
+            prop = xmpData.getProperty (XMPConst.NS_PHOTOSHOP, "ColorMode") // TODO: find way to read directly from file
             var mode = ["Bitmap", "Gray scale", "Indexed colour", "RGB colour", "CMYK colour", "Multi-channel", "Duotone", "LAB colour"];               
             if (prop){
                 dataExport.write ("\t" + mode[prop]);
@@ -2488,7 +2537,7 @@ var path = fieldsArr[L1].XMP_Property.slice(fieldsArr[L1].XMP_Property.indexOf("
     // File-Color Space
     if(fieldsArr[L1].Schema_Field == 'File-Color Space'){
     try  {
-        prop = xmpDataxmpData.getProperty ('http://ns.adobe.com/exif/1.0/', "ColorSpace");
+        prop = xmpDataxmpData.getProperty (XMPConst.NS_EXIF, "ColorSpace");
         var spec = ["1", "FFFF.H", "65535", "Other"]; 
         var label = ["sRGB", "Uncalibrated", "Uncalibrated", "reserved"];
         if (prop){
@@ -2596,10 +2645,10 @@ var path = fieldsArr[L1].XMP_Property.slice(fieldsArr[L1].XMP_Property.indexOf("
             }
         var completeMsgText = "";
         if(filePass == 0){
-            completeMsgText = filePass+" files exported.  Export file saved to:"; // No compatible files were found in the selected folder(s)
+            completeMsgText = filePass+" files exported.  Export file saved to:";
             }
         else{
-            completeMsgText = filePass+" files exported.  Export file saved to:";  // "Metadata has been exported from "+filePass+" files and saved to:"
+            completeMsgText = filePass+" files exported.  Export file saved to:";
             }
         complete.spacing = 3;
 		complete.alignChildren = 'center';		
@@ -3088,7 +3137,7 @@ var textFileNameArr = [];
 	
     {
         for (var L3 = 0; L3 < allFiles.length; L3++){
-			if ( allFiles.length > 50){
+			if ( allFiles.length > 10){
 				importingProgress.progBar.value = Math.round ((L3 / allFiles.length) * 100);  
 				  importingProgress.center();
 				  importingProgress.show();
@@ -3110,10 +3159,17 @@ try{
           xmpFile.close();  
         }   
     else{ 
+        /*
         // if file is not an .xmp sidecar pull XMP from file
         var xmpFile = new XMPFile(imageFile, XMPConst.UNKNOWN, XMPConst.OPEN_FOR_UPDATE); // PATH EDIT removed .fsName
         // convert to xmp
         var xmpData = xmpFile.getXMP();
+        */
+// FASTER
+app.synchronousMode = true;
+var xmpFile = new Thumbnail(new File(imageFile));
+var md = xmpFile.synchronousMetadata;
+var xmpData = new XMPMeta(md.serialize());
         }                   
     }
 catch(couldNotOpenError){}      
@@ -3424,14 +3480,19 @@ xmpFile.open('w');
 xmpFile.close()
 */
 xmpFile.open('w')
-xmpFile.write(xmpData.serialize(XMPConst.SERIALIZE_OMIT_PACKET_WRAPPER));
+xmpFile.write(xmpData.serialize(XMPConst.SERIALIZE_OMIT_PACKET_WRAPPER | XMPConst.SERIALIZE_USE_COMPACT_FORMAT));
 xmpFile.close()
     }
 else{  
+    /*
     if (xmpFile.canPutXMP(xmpData)) {
         xmpFile.putXMP(xmpData);
         }
     xmpFile.closeFile(XMPConst.CLOSE_UPDATE_SAFELY);	
+*/
+// FASTER
+var updatedPacket = xmpData.serialize(XMPConst.SERIALIZE_OMIT_PACKET_WRAPPER | XMPConst.SERIALIZE_USE_COMPACT_FORMAT);
+    xmpFile.metadata = new Metadata(updatedPacket);
     }
 }
 catch(couldNotCloseError){couldNotClose.push(allFiles[L3])}             
