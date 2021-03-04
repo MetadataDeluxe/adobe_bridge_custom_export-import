@@ -28,8 +28,8 @@ SOFTWARE.
 // Change these to make the script yours
 var projectName1 = "Metadata Deluxe"; // human friendly
 var projectName2 = "Metadata_Deluxe"; // computer friendly.  filenames - don't use spaces, use camelCase or _ or -
-var plgnVers = "1.0.2";
-var codeVers = "2021-02-13";
+var plgnVers = "(1.0.3)";
+var codeVers = "2021-02-24";
 // added .hide() to all palette .close(), fixed Mapping display; changed export file name to current foler+dateYMD; replaced type with xmpType; replaced header with label
 // changed field arr to new style; using indexOf to remove prefix from XMP_Property for read/write; fixed fieldList.add to use dropdown field text
 // added new build properties; added populate fields list based on lastViewedHeadersPanel; register namespaces from lastViewedHeadersPanel
@@ -76,8 +76,13 @@ var codeVers = "2021-02-13";
 // 2020-10-30 changed import files path section; updated help tips; added currentFields to export .txt filename
 // 2020-11-02 function toggleImportBtn(){ // removed importImageFolderOK == true && ; dataSourceFileAlert changed text color to red
 // 2020-11-17 removed var xmpLib = new ExternalObject("lib:" + pathToXMPLib );  not needed
+// version 1.0.2
 // 2021-02-12: added ai and xd to function testFileExtension(file)
 // 2021-02-13 changed to xmpLib == undefined to ExternalObject.AdobeXMPScript == undefined; simplified Load the XMP Script library; changed to  // FASTER read and write methods; removed ImportInst.templateBtn and changed ImportInst.text
+// version 1.0.3
+// 2021-02-16 reduced size of cutomization window to fit 1366 x 768 screen resolution
+// 2021-02-22 added try/catch to export folder and filename functions
+// 2021-02-24 changed reda/write from FASTER to XMPConst.OPEN_FOR_READ and XMPConst.OPEN_FOR_UPDATE to avoid crashing (not sure why it crashed on FASTER, but it did)
 
 
 //Create a menu option within Adobe Bridge
@@ -274,7 +279,7 @@ var UPprefsVersion = '2.0.9'; //always increment with preference file changes
    
 //////////////////////////////////////////////////////////////// BEGINNING OF MAIN UI WINDOW ////////////////////////////////////////////////////////////////
 		// Create the main dialog box
-		var mainWindow = new Window('palette', projectName1+" Export-Import - version "+plgnVers);
+		var mainWindow = new Window('palette', projectName1+" Export-Import (1.0.3)");
 		{ //  main UI window - brace 1 open
             // header
             settingsGroup = mainWindow.add('group', undefined, undefined)
@@ -1165,7 +1170,7 @@ var schemaArr = ['File','IPTC Core','Dublin Core','VRA Core','Custom'];
 var xmpTypeArr = ['', 'text', 'bag', 'seq', 'langAlt', 'boolean', 'date', 'file'];  // '-Select-', 
 // used to track if custom field list has been changed
 var triggerEnterCustomName = false;
-fieldsWindow.spacing=5;
+fieldsWindow.spacing=2;
 fieldsWindow.alignChildren = 'left'
 //fieldsWindow.graphics.backgroundColor = fieldsWindow.graphics.newBrush(fieldsWindow.graphics.BrushType.SOLID_COLOR,[0,0,0], 1);
 //fieldsWindow.margins = [10,10,10,10];
@@ -1520,6 +1525,7 @@ if (typeof Array.prototype.indexOf != "function") {
         }
     }
 var fieldsWindowScpr = fieldsWindow.add('statictext', undefined, "");
+fieldsWindowScpr.preferredSize = [5,5];
 // add field from entered values
 addBtn = fieldsWindow.add('button', [0,0,150,25], "Add") //dimx4_8 [0,0,80,25]
 addBtn.alignment = 'center';
@@ -1538,11 +1544,19 @@ addMoveDelteBtns.but4 = addMoveDelteBtns.add('button',undefined,"Clear All");
 addMoveDelteBtns.but4.enabled = true; //false
 
 message1 = fieldsWindow.add('group');
+var fieldListLabel1 = message1.add("statictext", [0,0,250,20], "Double click a field to edit the details");
+fieldListLabel1.graphics.foregroundColor = fieldListLabel1.graphics.newPen (fieldListLabel1.graphics.PenType.SOLID_COLOR, [0.5,0.5,0.5], 1);
 message1.f1 = message1.add('statictext', undefined, "");
 message1.f1.preferredSize = [500,20];
 message1.indent = 110;
 message1.f1.graphics.font = ScriptUI.newFont ("Arial", "Bold", 12);
 message1.f1.graphics.foregroundColor = message1.f1.graphics.newPen (message1.f1.graphics.PenType.SOLID_COLOR, [1, 0, 0], 1);
+
+var fieldListGroup = fieldsWindow.add("group");
+fieldListGroup.orientation = 'column';
+fieldListGroup.spacing = 5;
+fieldListGroup.alignChildren = 'left';
+fieldListGroup.indent = 110;
 
 // if all fields have data, enable Add button
 inputs.addEventListener ("change", function(){
@@ -1668,15 +1682,6 @@ else{alert("All field boxes must be filled in")}
 //okToAdd==false
 } // CLOSE 
 
-var fieldListGroup = fieldsWindow.add("group");
-fieldListGroup.orientation = 'column';
-fieldListGroup.spacing = 5;
-fieldListGroup.alignChildren = 'left';
-fieldListGroup.indent = 110;
-
-var fieldListLabel1 = fieldListGroup.add("statictext", [0,0,1000,20], "Double click a field to edit the details");
-fieldListLabel1.graphics.foregroundColor = fieldListLabel1.graphics.newPen (fieldListLabel1.graphics.PenType.SOLID_COLOR, [0.5,0.5,0.5], 1);
-
 // Field list headers
 var fieldListHeaders = fieldListGroup.add("group");
 var fieldListHeaders01 = fieldListHeaders.add ("statictext", [0,0,190,25], "Field");
@@ -1690,9 +1695,9 @@ fieldListHeaders.children[i].graphics.font = ScriptUI.newFont ("Arial", 'BOLD', 
 //fieldListHeaders.graphics.backgroundColor = fieldListHeaders.graphics.newBrush(fieldListHeaders.graphics.BrushType.SOLID_COLOR,[0.2,0.2,0.2], 1);
 
 // list box with five titled columns for the field components
-var fieldList =fieldListGroup.add ('ListBox', [0,0,1000,450], 'Fields',
+var fieldList =fieldListGroup.add ('ListBox', [0,0,1000,300], 'Fields',
 {numberOfColumns: 5, showHeaders: false,
-columnTitles: ['Field', 'My Label', 'Namespace', 'XMP_Property', 'XMP_Type'], columnWidths: [200,200,300,200,80]});
+columnTitles: ['Field', 'My Label', 'Namespace', 'XMP_Property', 'XMP_Type'], columnWidths: [200,200,300,200,40]});
 //fieldList.alignment = 'right';
 //fieldList.indent = 110;
 // when an item in col1 is selected, enable move up, down, delete buttons
@@ -2224,7 +2229,7 @@ var currentFolderPath = exportWhich.folderEt.text.substr(0,splicePathIndex1+1).s
 	  if (exportWhich.fieldsArrRb.value == true) var Thumb = app.document.selections;
 
 			// progress bar window to show files are exporting
-			var exportProgress = new Window ("palette {text: ' " + plgnName + "  " + spot + "  (Exporting "+projectName2+" Data)', bounds: [0,0,500,30], X: Progressbar {bounds: [0,0,500,30]}};");
+			var exportProgress = new Window ("palette {text: 'Exporting metadata from "+Thumb.length+" files...', bounds: [0,0,500,30], X: Progressbar {bounds: [0,0,500,30]}};");
       // write UTF-8 BOM
       dataExport.write ("\uFEFF")
 
@@ -2241,13 +2246,13 @@ for (var L1 = 0; L1 < customFileArr.length; L1++){
           //dataExport.write (fieldsArr2[0].Label + "\t")               
 			// begin exporting data to the text file
 			// loop through array of headers (properties) and write them to the .txt file
-			for (var L1 = 0; L1 < fieldsArr.length; L1++){  // chaged L1 = 1 becasue filename was being exported twice
+			for (var L1 = 0; L1 < fieldsArr.length; L1++){  // chaged L1 = 1 because filename was being exported twice
                 dataExport.write (fieldsArr[L1].Label + "\t");
                 }
 			// loop through files, read XMP property data and write it to "^"+projectName1+"_Data.txt"
 			for (var L2 = 0; L2 < Thumb.length; L2++){
-            // Display exorting progress bar if there are more than 50 images
-			  if (Thumb.length > 50){
+            // Display exorting progress bar if there are more than 10 images
+			  if (Thumb.length > 10){
 				   exportProgress.X.value = (L2 / Thumb.length) * 100;
 				   exportProgress.center();
 				   exportProgress.show();
@@ -2256,13 +2261,16 @@ for (var L1 = 0; L1 < customFileArr.length; L1++){
              // start reading each file (Thumb)
 			if (Thumb[L2]){                  
              // get just the file name from allFiles so we can compare it to the file name in the text file
+             try{	
                 if (exportWhich.folderRb.value == true){
                     var splicePathIndex = allFiles[L2].fsName.toString().lastIndexOf (slash); // was "\\"
                     }
                 else{
                     var splicePathIndex = Thumb[L2].spec.toString().lastIndexOf ("/"); // slash doesn't work - "/" works for Windows and Mac
                     }
-			 /* // TODO: disabled becasue Mac requires ".lastIndexOf ("/")" the same as Windows - use new doubled version below?
+                }
+                catch(couldNotOpenError){}
+			 /* // TODO: disabled because Mac requires ".lastIndexOf ("/")" the same as Windows - use new doubled version below?
 				 if (Folder.fs == 'Windows'){
 					var splicePathIndex = Thumb[L2].toString().lastIndexOf ("/")
 					}
@@ -2272,18 +2280,23 @@ for (var L1 = 0; L1 < customFileArr.length; L1++){
 					}
 				*/
 				// just the file directory
+                try{
                 if (exportWhich.folderRb.value == true){
                     var spliceDirectory = allFiles[L2].fsName.toString().substr(0,splicePathIndex+1).split("%20").join(" ");  
                     }
                 else{
                     var spliceDirectory = Thumb[L2].spec.toString().substr(0,splicePathIndex+1).split("%20").join(" ").split("/").join("\\");
                     }
+                }
+                catch(couldNotOpenError){}
 				// just the file name
+                try{
 				if (exportWhich.folderRb.value == true) var spliceName = Thumb[L2].fsName.slice(splicePathIndex+1).split("%20").join(" ");
                   if (exportWhich.fieldsArrRb.value == true) var spliceName = Thumb[L2].name.split ("%20").join (' '); // was fsName
 				// overall try/catch for each image. If read passes, 1 is added to filePass variable. If read fails, catch error adds 1 to fileFail variable  and file name to fileFailArr
-				try
-				{		
+                }
+                catch(couldNotOpenError){}
+				try{		
 				  // Get the file
 				  if (exportWhich.folderRb.value == true) var singleFile = Thumb[L2];
 				  if (exportWhich.fieldsArrRb.value == true) var  singleFile = Thumb[L2].spec;                  
@@ -2300,17 +2313,19 @@ for (var L1 = 0; L1 < customFileArr.length; L1++){
                         }
                     else{
                         // if file is not an .xmp sidecar pull XMP from file
-                  /*
+                  
                         var xmpFile = new XMPFile(singleFile.fsName, XMPConst.UNKNOWN, XMPConst.OPEN_FOR_READ);
 					 xmpFile.encoding = "UTF8 BOM";
-                        // convert to xmp
+                        // convert to XML
                         var xmpData = xmpFile.getXMP();          
-                        */
+                        
 // FASTER
+/*
 app.synchronousMode = true;
 var xmpFile = new Thumbnail(new File(singleFile));
 var md = xmpFile.synchronousMetadata;
 var xmpData = new XMPMeta(md.serialize());
+*/
                         }
                     }
                     catch(couldNotOpenError){}
@@ -3131,13 +3146,14 @@ var textFileNameArr = [];
 		// Progress bar window to show files are importing
 		var importingProgress =  new Window ('palette', "Importing Metadata");
         importingProgress.alignChildren = 'center';
-		importingProgress.preferredSize = [400,80];
+		importingProgress.preferredSize = [400,120];
 		importingProgress.count = importingProgress.add('statictext', undefined, allFiles.length+" image files to proccess");
+        importingProgress.comment = importingProgress.add('statictext', undefined, "Don't worry if you see '(Not Responding)', it's still working");
 		importingProgress.progBar = importingProgress.add('progressbar', [0,20,390,40]);
 	
     {
         for (var L3 = 0; L3 < allFiles.length; L3++){
-			if ( allFiles.length > 10){
+			if ( allFiles.length > 5){
 				importingProgress.progBar.value = Math.round ((L3 / allFiles.length) * 100);  
 				  importingProgress.center();
 				  importingProgress.show();
@@ -3159,17 +3175,18 @@ try{
           xmpFile.close();  
         }   
     else{ 
-        /*
+
         // if file is not an .xmp sidecar pull XMP from file
         var xmpFile = new XMPFile(imageFile, XMPConst.UNKNOWN, XMPConst.OPEN_FOR_UPDATE); // PATH EDIT removed .fsName
         // convert to xmp
         var xmpData = xmpFile.getXMP();
-        */
+/*
 // FASTER
 app.synchronousMode = true;
 var xmpFile = new Thumbnail(new File(imageFile));
 var md = xmpFile.synchronousMetadata;
 var xmpData = new XMPMeta(md.serialize());
+*/
         }                   
     }
 catch(couldNotOpenError){}      
@@ -3484,15 +3501,15 @@ xmpFile.write(xmpData.serialize(XMPConst.SERIALIZE_OMIT_PACKET_WRAPPER | XMPCons
 xmpFile.close()
     }
 else{  
-    /*
     if (xmpFile.canPutXMP(xmpData)) {
         xmpFile.putXMP(xmpData);
         }
     xmpFile.closeFile(XMPConst.CLOSE_UPDATE_SAFELY);	
-*/
+/*
 // FASTER
 var updatedPacket = xmpData.serialize(XMPConst.SERIALIZE_OMIT_PACKET_WRAPPER | XMPConst.SERIALIZE_USE_COMPACT_FORMAT);
     xmpFile.metadata = new Metadata(updatedPacket);
+*/
     }
 }
 catch(couldNotCloseError){couldNotClose.push(allFiles[L3])}             
