@@ -82,7 +82,7 @@ var codeVers = "2021-02-24";
 // version 1.0.3
 // 2021-02-16 reduced size of cutomization window to fit 1366 x 768 screen resolution
 // 2021-02-22 added try/catch to export folder and filename functions
-// 2021-02-24 changed reda/write from FASTER to XMPConst.OPEN_FOR_READ and XMPConst.OPEN_FOR_UPDATE to avoid crashing (not sure why it crashed on FASTER, but it did)
+// 2021-02-24 changed read/write from FASTER to XMPConst.OPEN_FOR_READ and XMPConst.OPEN_FOR_UPDATE to avoid crashing (not sure why it crashed on FASTER, but it did)
 
 
 //Create a menu option within Adobe Bridge

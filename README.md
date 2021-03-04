@@ -1,7 +1,7 @@
 # Customizable Metadata Export-Import Plugin for Adobe Bridge
 JavaScript plugin for Adobe Bridge CS5 and higher that allows the user to export and import embedded XMP metadata from media files.
 
-Supported file types: ai, avi, bmp, dng, flv, gif, indd, indt, jpe?g, mp2, mp3, mp4, mov, pdf, png, psd, swf, tiff?, wav, wma, wmv, xmp, xd, and RAW files an XMP sidecar
+Supported file types: ai, avi, bmp, dng, flv, gif, indd, indt, jpe?g, mp2, mp3, mp4, mov, pdf, png, psd, swf, tiff?, wav, wma, wmv, xmp, and RAW files an XMP sidecar
 
 This plugin is written in Adobe ScriptUI and utilizes the Adobe Bridge JavaScript object model
 
