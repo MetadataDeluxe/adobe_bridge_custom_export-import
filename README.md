@@ -36,7 +36,7 @@ THERE ARE NO WARRANTIES FOR LOSS OR UNINTENDED MODIFICATION OF DATA.*
   1. Locate the menu "VRA Core Metadata at the top of the Bridge window (to the right of "Help")
   2. Click "Metadata Export-Import" on the dropdown
 
-[User Guide](https://metadatadeluxe.github.io/adobe_bridge_custom_export-import.html)
+## [User Guide](https://metadatadeluxe.github.io/adobe_bridge_custom_export-import.html)
 
 ## License
 [The MIT License](/LICENSE.txt)
