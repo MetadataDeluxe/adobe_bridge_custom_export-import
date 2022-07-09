@@ -25,11 +25,11 @@ SOFTWARE.
 */
 
 { // brace 1 open
-// Change these to make the script yours
+// menu text
 var projectName1 = "Metadata Deluxe"; // human friendly
 var projectName2 = "Metadata_Deluxe"; // computer friendly.  filenames - don't use spaces, use camelCase or _ or -
-var plgnVers = "(1.0.3)";
-var codeVers = "2021-02-24";
+var plgnVers = "(1.0.4)";
+var codeVers = "2022-07-09";
 // added .hide() to all palette .close(), fixed Mapping display; changed export file name to current foler+dateYMD; replaced type with xmpType; replaced header with label
 // changed field arr to new style; using indexOf to remove prefix from XMP_Property for read/write; fixed fieldList.add to use dropdown field text
 // added new build properties; added populate fields list based on lastViewedHeadersPanel; register namespaces from lastViewedHeadersPanel
@@ -58,7 +58,7 @@ var codeVers = "2021-02-24";
 // changed import paths to use .spec.fsName  search for PATH EDIT.  Custom list UNDEFINED on open now - need to fix - check lastViewedHeadersPanel  SEE app.document.presentationPath.split(slash).join("/")+"/";
 // added appDataPlgnSet.encoding = "UTF8"; to write CJK to prefs text file
 // line 2004 changed var currentFolderPath
-// EXPORT & IMPORT, changed to .presentationPath - var currentFolderPath = app.document.presentationPath;  // PATH EDIT
+// EXPORT & IMPORT, changed to .presentationPath - var currentFolderPath = app.document.presentationPath;// PATH EDIT
 // IMPORT, changed var selectedFolder = Folder(currentFolderPath) to var selectedFolder = Folder(currentFolder)
 // IMPORT changed if (testFileExtension(Thumb[L2]) == false) // failing on selectedThumnails TO if (testFileExtension(singleFile) == false) 
 // EXPORT added condition "if entire folder is selected"  if "Include subfolders" is not checked, only read the files in the selected folder TODO: do I need to add anything when selected thumbs is selected? - progress bar? allFiles no longer needed?
@@ -72,18 +72,21 @@ var codeVers = "2021-02-24";
 // added separate headers group to fieldList for readability
 // added .active = true; every time a window is returned to (otherwise it would not be active on a Mac)
 // adjusted UI dimensions for Mac
-// 2020-10-27 changed var splicePathIndex = allFiles[L2].fsName.toString().lastIndexOf (slash);  was ("\\")
+// 2020-10-27 changed var splicePathIndex = allFiles[L2].fsName.toString().lastIndexOf (slash);was ("\\")
 // 2020-10-30 changed import files path section; updated help tips; added currentFields to export .txt filename
 // 2020-11-02 function toggleImportBtn(){ // removed importImageFolderOK == true && ; dataSourceFileAlert changed text color to red
-// 2020-11-17 removed var xmpLib = new ExternalObject("lib:" + pathToXMPLib );  not needed
+// 2020-11-17 removed var xmpLib = new ExternalObject("lib:" + pathToXMPLib );not needed
 // version 1.0.2
 // 2021-02-12: added ai and xd to function testFileExtension(file)
 // 2021-02-13 changed to xmpLib == undefined to ExternalObject.AdobeXMPScript == undefined; simplified Load the XMP Script library; changed to  // FASTER read and write methods; removed ImportInst.templateBtn and changed ImportInst.text
 // version 1.0.3
 // 2021-02-16 reduced size of cutomization window to fit 1366 x 768 screen resolution
 // 2021-02-22 added try/catch to export folder and filename functions
-// 2021-02-24 changed read/write from FASTER to XMPConst.OPEN_FOR_READ and XMPConst.OPEN_FOR_UPDATE to avoid crashing (not sure why it crashed on FASTER, but it did)
-
+// 2021-02-24 changed reda/write from FASTER to XMPConst.OPEN_FOR_READ and XMPConst.OPEN_FOR_UPDATE to avoid crashing (not sure why it crashed on FASTER, but it did)
+// 2021-05-13 moving text to variables
+// 2021-07-29 IMPORT: moved var currentFolderPath = app.document.presentationPath; outside of old  // get currentPath  if loop
+// 2022-03-12 added IPTC-Alt Text (Accessibility) and IPTC-Extended Description (Accessibility) to iptcFieldsArr 
+// 2022-07-09 IMPORT: for 'langAlt' /properties, get the x-default value
 
 //Create a menu option within Adobe Bridge
 var findProjectMenu = MenuElement.find (projectName2);
@@ -108,10 +111,9 @@ var loc = scriptfo + '/images/'; //images folder
 var UPprefsPath = ''; //path to preferences file
 var UPprefsVersion = '2.0.9'; //always increment with preference file changes
 */   
- 
+
 	// variables  used throughout
-    // Don't change these
-	var plgnName = ""+projectName1+" Metadata Export-Import";
+    // Don't change these, you will break several functionns ////////
 	var appDataFwdSlash = Folder.userData;
 	var plgnPrefs = "/"+projectName2+"_Import_Export";
 	var plgnSet = "/settings.txt";
@@ -120,62 +122,137 @@ var UPprefsVersion = '2.0.9'; //always increment with preference file changes
 	var exportChoice = "folder";
     var plgnHeaders = "/Import-Export_Fields";
     var enteredCustomName = "Custom_Fields_01";
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	var dateTime = new XMPDateTime(new Date());    // today's date and time
+	var dateYMD = dateTime.toString().slice(0, -19);
+    
+    var plgnName = ""+projectName1+" Metadata Export-Import";
     var originalLastViewedHeadersPanel = "";
     var lastViewedHeadersPanel = "";
     var loadedDefineHeadersText = "";
     var originalCustomFileText = "";
     var customFileText = "{Schema_Field:'File-Name', Label:'File Name', Namespace:'file', XMP_Property:'file', XMP_Type:'file'}";
-	var fieldsArr = [];  // array of objects for export and import functions.  this is populated by user saved text file or set  by the user in the build properties window
-    
-	// today's date
-	var dateTime = new XMPDateTime(new Date()); // now
-	var dateYMD = dateTime.toString().slice(0, -19);
-	var arrowLeft = "←";
-      var arrowRight = "→";
-	//Tool tips
-	var clickInstrucTT = "Click for instructions";
-        
-	var imageFolderPath = "Folder containing files";
-	var imageFolderBrowse = "Locate the path to your folder of images";
-	
-	var textFilePath = ".txt file of metadata to be imported\n\nClick 'Browse' to change"
-	var textFileBrowse = "Locate the path to your .txt file";
-	
-	var dateWhyTT = 
-	"This is useful if you will be importing the metadata to Excel.\n\n" +
-	"XMP Date values must use the YYYY/MM/DD format.  Adding a '_' character at the beginning of the Date will prevent Excel from automatically changing it to a format XMP cannot understand.\n\n" +
-	"The '_' character will be removed when you import the data back into the image file(s)."
-			   
-	var lineFeedWhyTT = 
-	"This is useful if you will be importing the metadata to Excel.\n\n" +
-	"When selected, line breaks (line feed and carriage return) will be replaced by a semi-colon and a space ('; ').\n\n"+
-	"When not selected, line breaks will be retained but converted to plain text place holders ('LF'), ('CR') so that they are not changed by Excel.  When the data is imported back to an image, the codes will be changed to the proper XMP encoding."	
-	
-	var replaceDataTT = 
-	"Completely replaces any existing metadata\n" +
-	"in the image file(s) with the metadata in the\n"+
-    "tab-delimited import file.\n" +
-	"   • Overwrites all fields except camera and\n"+
-    "      software fields."
-		  
-	var appendDataTT = 
-	"Applies the tab-delimited import metadata\n"+
-    "where no metadata value or property currently\n" +
-	"exists in the file.\n" +
-	"   • Does not overwrite existing data.\n" +
-	"   • Data will only be imported to blank fields."
-	
-	var createTemplateTT = 
-	"Creates a text file which, when opened in Excel, contains the proper column field names for the "+projectName1+" import function.\nYou can then paste your own data in the appropriate columns for import.";
-	
-	var IgnoreExtCbTT = 
-	"When selected, metadata will be imported to all matching media with matching file names regardless of the file extension.\n" +
-	"This allows you to import matching metadata to all versions of the same media file, e.g., .tif, .jpg. .png.";
-	
-	var addLabelTT = 
-	"When selected, each image that has metadata successfully imported will have its label set to: '"+projectName1+" metadata imported' and the label color will be changed to white.\n" +
-	"Warning: Existing labels will be lost.";
+	var fieldsArr = [];// array of objects for export and import functions.  this is populated by user saved text file or set  by the user in the build properties window
 
+	var arrowLeft = "←";
+    var arrowRight = "→";
+    
+	// buttons
+    var exportWhichFieldsArrRbTxt = "Selected thumbnail(s) in Bridge";
+    var exportWhichFolderRbTxt = "Entire folder";
+    var exportWhichSubfoldersCbTxt = "include subfolders";
+    var exportOptionsDatesCbTxt = "prepend Image dates with '_'";
+    var exportOptionsLfCbTxt = "Remove line breaks";
+    var exportBtnTxt = "Export";    
+    
+    // text and labels		
+    var editFieldsPromptSt1Text = "There are no fields defined for Export/Import\n\nBegin by customizing the Fields List";
+    var mainWindowTxt = " Export-Import ";
+    var fieldsTxtTxt = "Current Fields: ";
+    var setHeadersTxt= "Edit Fields";
+    var exportTxtLow = "export";
+    var exportTxtUp = "EXPORT";
+    var importTxtLow = "import";
+    var importTxtUp = "IMPORT";
+    var exportPanelTxt = "Export Metadata";
+    var exportWhichTxt = "Files to export";
+     
+    // tool tips
+    var addLabelTT = 
+    "When selected, each image that has metadata successfully imported will have its label set to: '"+projectName1+" metadata imported' and the label color will be changed to white.\n"+
+    "Warning: Existing labels will be lost.";
+    var appendDataTT = 
+    "Applies the tab-delimited import metadata\n"+
+    "where no metadata value or property currently\n"+
+    "exists in the file.\n"+
+    "   • Does not overwrite existing data.\n"+
+    "   • Data will only be imported to blank fields."
+    var clickInstrucTT = "Click for instructions";
+    var createTemplateTT = 
+    "Creates a text file which, when opened in Excel, contains the proper column field names for the "+projectName1+" import function.\nYou can then paste your own data in the appropriate columns for import.";
+    var dateWhyTT = 
+    "This is useful if you will be importing the metadata to Excel.\n\n"+
+    "XMP Date values must use the YYYY/MM/DD format.  Adding a '_' character at the beginning of the Date will prevent Excel from automatically changing it to a format XMP cannot understand.\n\n"+
+    "The '_' character will be removed when you import the data back into the image file(s).";
+    var exportWhichTT = "Change folder using Bridge navigation";
+    var fieldLabelsLbl1TT = "Pre-defined schema field name (not editable)";
+    var fieldLabelsLbl2TT = "Do not change for pre-defined schemas, set your own for custom property";
+    var fieldLabelsLbl3TT = "The label you want to use for the field";
+    var fieldLabelsLbl4TT = "namespace URL, EXAMPLE: http://purl.org/dc/elements/1.1/";
+    var fieldLabelsLbl5TT = "namespace prefix:property name, EXAMPLE: dc:title";
+    var fieldLabelsLbl6TT = "XMP property type. Consult schema documentation, or set for your custom property";
+    var fieldsTxtTT = "List of fields to be exported/imported";
+    var IgnoreExtCbTT = 
+    "When selected, metadata will be imported to all matching media with matching file names regardless of the file extension.\n"+
+    "This allows you to import matching metadata to all versions of the same media file, e.g., .tif, .jpg. .png.";
+    var imageFolderBrowseTT = "Locate the path to your folder of images";
+    var imageFolderPathTT = "Folder containing files";
+    var imageLocTT = "Change folder using Bridge navigation";  			
+    var lineFeedWhyTT = 
+    "This is useful if you will be importing the metadata to Excel.\n\n"+
+    "When selected, line breaks (line feed and carriage return) will be replaced by a semi-colon and a space ('; ').\n\n"+
+    "When not selected, line breaks will be retained but converted to plain text place holders ('LF'), ('CR') so that they are not changed by Excel.  When the data is imported back to an image, the codes will be changed to the proper XMP encoding."; 
+    var loadCustomBut1TT = "Select and load a saved custom field list";
+    var loadCustomBut2TT = "Open folder containing your custom field lists so you can edit or delete them";
+    var loadCustomEt1TT = "List of fields to be exported/imported";
+    var replaceDataTT = 
+    "Completely replaces any existing metadata\n"+
+    "in the image file(s) with the metadata in the\n"+
+    "tab-delimited import file.\n"+
+    "   • Overwrites all fields except camera and\n"+
+    "      software fields.";
+    var setHeadersTT = "Edit the list of fields to be exported/imported";
+    var textFileBrowseTT = "Locate the path to your .txt file";
+    var textFilePathTT = ".txt file of metadata to be imported\n\nClick 'Browse' to change"
+    
+    // instructions
+    var exportOptInstTxt = "Export Options";
+    var exportOptInstTextTxt =
+    "Export Options\n\n"+
+    "Option 1:  prepend Image dates with '_'\n"+
+    "   This is useful if you will be importing the metadata to Excel.\n"+                    
+    "   XMP Date values must use the YYYY/MM/DD format.  Adding a '_' character at the beginning of\n"+
+    "      the Date will prevent Excel from automatically changing it to a format XMP cannot understand.\n"+
+    "       (if your system is set up for another format, that will bereflected in the way Excel displays dates)\n"+
+    "     The '_' character will be removed when you import the data back into the image file(s).\n\n"+
+    "Option 2:  Remove line breaks\n"+
+    "    This is useful if you will be importing the metadata to Excel.\n"+
+    "    When selected, line breaks (line feed and carriage return) will be replaced by a semi-colon and a space ('; ').\n"+
+    "    When not selected, line breaks will be retained but converted to plain text place holders ('LF'), ('CR') so\n"+
+    "       that they are not changed by Excel.  When the data is imported back to an image, the codes will be\n"+
+    "       changed to the proper XMP encoding." 
+    var ExportInstTxt = "Export Instructions";
+    var ExportInstTextTxt =
+    "    Choose which files to export\n" +
+    "          From selected files only\n" +
+    "              1. Select file(s) in Adobe Bridge\n"+
+    "              2. Under ‘Images’, choose 'Selected thumbnails in Bridge'\n" +
+    "              3. Select desired export options (see below)'\n" +
+    "              4. click 'Export'\n" +
+    "              5. Choose name and location for your export file (.txt format)'\n" +
+    "              6. Saven\n" +
+    "          From all image files in a folder\n" +
+    "              1. Select 'Entire folder'\n" +
+    "              2. Use 'browse'  to select folder you wish to use\n" +
+    "              3. If you want to export images in all subfolders check the box 'include subfolders'\n" +
+    "              4. Select desired export options (see below)\n" +
+    "              5. Click 'Export'\n" +
+    "              6. Choose name and location for your export file (.txt format)\n" +
+    "              7. Save\n\n" +
+    "     After export is complete\n" +
+    "          1. Open your .txt file in a spreadsheet using tab delimiters.\n" +
+    "          2. Because the .txt file is created as UTF-8, it is best to use the Excel import text wizard to retain\n"+
+    "              proper character encoding, e.g. ©, 작, ü\n"+
+    "                a. Use import option and select a .txt file to import\n" +
+    "                b. Text Import Wizard\n" +
+    "                    i. File origin = 65001- Unicode (UTF-8)\n" +
+    "                    ii. Delimited = Tab\n" +
+    "                    iii. Finish\n" +
+    "          3. The first row will contain the field names.\n"+
+    "              Each row below that will contain metadata for a single exported file."
+
+    
      // If the current file system is Windows, create directory location variables
      if (Folder.fs == 'Windows'){
 		var spot = "•";
@@ -225,7 +302,7 @@ var UPprefsVersion = '2.0.9'; //always increment with preference file changes
         var exportSaveLocation = "~/Desktop/"+currentFolder+"_METADATA_"+dateYMD+".txt"; // dateTime OR dateYMD
         // var exportSaveLocation = currentFolder+"_METADATA_"+dateYMD+".txt"; // let user select save location, filename based on current folder
         }
-  //  var currentPathSaveFile = currentPath+"_"+dateYMD+".txt";  save to same folder as images being exported, filename based on current folder
+  //  var currentPathSaveFile = currentPath+"_"+dateYMD+".txt";save to same folder as images being exported, filename based on current folder
   */
     var mode = "export"
 	 // preferredSize for UI objects
@@ -237,12 +314,12 @@ var UPprefsVersion = '2.0.9'; //always increment with preference file changes
         var buttonSize3 = [150,40];
         var textSize1 = [550,20];
         var textSize2 = [660,20];
-        var spcr1 = [0,0,40,20];        
+        var spcr1 = [0,0,40,20];
         var dimx4_1 = [0,0,100,25];
         var dimx4_2 = [0,0,200,25];
         var dimx4_3 = [0,0,300,25];
         var dimx4_4 = [0,0,400,25];
-        var dimx4_5 = [0,0,500,25];        
+        var dimx4_5 = [0,0,500,25];
         var dimx4_8 = [0,0,80,25];
         var dimx4_9 = [0,0,100,200];
         }
@@ -252,12 +329,12 @@ var UPprefsVersion = '2.0.9'; //always increment with preference file changes
         var buttonSize3 = [150,45];
         var textSize1 = [560,20];
         var textSize2 = [660,20];
-        var spcr1 = [0,0,40,20];        
+        var spcr1 = [0,0,40,20];
         var dimx4_1 = [0,0,100,25];
         var dimx4_2 = [0,0,200,25];
         var dimx4_3 = [0,0,300,25];
         var dimx4_4 = [0,0,400,25];
-        var dimx4_5 = [0,0,500,25];        
+        var dimx4_5 = [0,0,500,25];
         var dimx4_8 = [0,0,80,25];
         var dimx4_9 = [0,0,100,200];
         }
@@ -279,21 +356,21 @@ var UPprefsVersion = '2.0.9'; //always increment with preference file changes
    
 //////////////////////////////////////////////////////////////// BEGINNING OF MAIN UI WINDOW ////////////////////////////////////////////////////////////////
 		// Create the main dialog box
-		var mainWindow = new Window('palette', projectName1+" Export-Import (1.0.3)");
+		var mainWindow = new Window('palette', projectName1+mainWindowTxt+"("+plgnVers+")"); 
 		{ //  main UI window - brace 1 open
             // header
             settingsGroup = mainWindow.add('group', undefined, undefined)
             //settingsGroup.preferredSize = [720, 20]
             settingsGroup.alignment='left';
-            fieldsTxt = settingsGroup.add('statictext', dimx4_3, "Current Fields: "+lastViewedHeadersPanel)
+            fieldsTxt = settingsGroup.add('statictext', dimx4_3, fieldsTxtTxt+lastViewedHeadersPanel)
             //fieldsTxt.justify = "center";
-            fieldsTxt.graphics.font = ScriptUI.newFont ("Arial", 'BOLD', 16);
+            fieldsTxt.graphics.font = ScriptUI.newFont ('Arial', 'BOLD', 16);
             fieldsTxt.graphics.foregroundColor = fieldsTxt.graphics.newPen (mainWindow.graphics.PenType.SOLID_COLOR, [1,0.58,0], 1);
-            fieldsTxt.helpTip = "List of fields to be exported/imported"; // name of the currently loaded field list
-            setHeaders = settingsGroup.add('button', undefined, "Edit Fields")
+            fieldsTxt.helpTip = fieldsTxtTT; // name of the currently loaded field list
+            setHeaders = settingsGroup.add('button', undefined, setHeadersTxt)
             setHeaders.preferredSize = [120,30] //buttonSize9
             //  setHeaders.alignment = 'left';
-            setHeaders.helpTip = "Edit the list of fields to be exported/imported";
+            setHeaders.helpTip = setHeadersTT;
             setHeaders.onClick = function(){
                 mainWindow.enabled = false;
                 fieldsWindow.show();
@@ -303,11 +380,11 @@ var UPprefsVersion = '2.0.9'; //always increment with preference file changes
                 }
 
         navGroup = mainWindow.add('group', undefined, undefined)
-        navExportBtn = navGroup.add('radiobutton', undefined, arrowLeft+"EXPORT"+arrowRight)
+        navExportBtn = navGroup.add('radiobutton', undefined, arrowLeft+exportTxtUp+arrowRight)
         navExportBtn.preferredSize = [150,20];
         navExportBtn.value = true
         navExportBtn.onClick = function(){mode = "export"; toggleNav();}
-        navImportBtn = navGroup.add('radiobutton', undefined, "import")
+        navImportBtn = navGroup.add('radiobutton', undefined, importTxtLow)
         navImportBtn.preferredSize = [150,20];
         navImportBtn.onClick = function(){mode = "import"; toggleNav();}
 
@@ -316,7 +393,7 @@ var UPprefsVersion = '2.0.9'; //always increment with preference file changes
 		mainWindow.row.spacing = 0;
 	  
         // Export section
-        exportPanel = mainWindow.row.add('panel', undefined, "Export Metadata");
+        exportPanel = mainWindow.row.add('panel', undefined, exportPanelTxt);
         exportPanel.margins = 3;
         exportPanel.alignChildren = 'center';
         exportPanel.minimumSize = [675, undefined];
@@ -332,7 +409,7 @@ var UPprefsVersion = '2.0.9'; //always increment with preference file changes
 		var selections = app.document.selections;
 		var folder  = app.document.visibleThumbnails;
 
-		exportWhich = exportPanel.add('panel', undefined, "Files to export");
+		exportWhich = exportPanel.add('panel', undefined, exportWhichTxt);
 		exportWhich.alignChildren = 'left';
 		exportWhich.spacing = 2;
         exportWhich.margins = 5;
@@ -340,14 +417,13 @@ var UPprefsVersion = '2.0.9'; //always increment with preference file changes
 		// Spacer
 		spacer1 = exportWhich.add( 'group' );
 		spacer1.minimumSize = [100, 10]
-		  var  exportWhichfieldsArrRbtext = "Selected thumbnail(s) in Bridge"
-          exportWhich.fieldsArrRb = exportWhich.add('radiobutton', undefined, exportWhichfieldsArrRbtext);
+          exportWhich.fieldsArrRb = exportWhich.add('radiobutton', undefined, exportWhichFieldsArrRbTxt);
           exportWhich.fieldsArrRb.onClick = function(){ 
               exportChoice = "thumbs";
               toggleExportWhich();
               }  
           
-		exportWhich.folderRb = exportWhich.add('radiobutton', undefined, "Entire folder");
+		exportWhich.folderRb = exportWhich.add('radiobutton', undefined, exportWhichFolderRbTxt);
 		exportWhich.folderRb.value = true;
 		exportWhich.folderRb.onClick = function(){
 			exportChoice = "folder";
@@ -363,9 +439,9 @@ var UPprefsVersion = '2.0.9'; //always increment with preference file changes
         exportWhich.folderEt = exportWhich.subfoldersGr.add('statictext', undefined, "");
 		exportWhich.folderEt.minimumSize = textSize1; // textSize1 = [550,20]
         exportWhich.folderEt.maximumSize = textSize1;
-		exportWhich.folderEt.helpTip = imageFolderPath;
+		exportWhich.folderEt.helpTip = imageFolderPathTT;
 
-		exportWhich.subfoldersCb = exportWhich.subfoldersGr.add('checkbox', undefined, "include subfolders");		
+		exportWhich.subfoldersCb = exportWhich.subfoldersGr.add('checkbox', undefined, exportWhichSubfoldersCbTxt);		
       
         // Panel for options
          exportOptionsGrp = exportPanel.add('group', undefined, undefined);
@@ -376,14 +452,14 @@ var UPprefsVersion = '2.0.9'; //always increment with preference file changes
 
 		exportOptions.dates = exportOptions.add( 'group' );
 		exportOptions.dates.orientation = 'row';
-		exportOptions.datesCb = exportOptions.dates.add('checkbox', undefined, "prepend Image dates with '_'");
+		exportOptions.datesCb = exportOptions.dates.add('checkbox', undefined, exportOptionsDatesCbTxt);
         exportOptions.datesCb.value = true;
 		exportOptions.datesCb.minimumSize = [200, undefined];
 	//	exportOptions.datesCb.helpTip = dateWhyTT;
 
 		exportOptionsLf = exportOptions.add( 'group' );
 		exportOptionsLf.orientation = 'row';
-		exportOptionsLfCb = exportOptionsLf.add('checkbox', undefined, "Remove line breaks");
+		exportOptionsLfCb = exportOptionsLf.add('checkbox', undefined, exportOptionsLfCbTxt);
         exportOptionsLfCb.value = true;
 		exportOptionsLfCb.minimumSize = [200, undefined];
 	//	exportOptionsLfCb.helpTip = lineFeedWhyTT;
@@ -395,7 +471,7 @@ var UPprefsVersion = '2.0.9'; //always increment with preference file changes
 		exportOptionsButton.helpTip = clickInstrucTT;
 		exportOptionsButton.onClick = showExportOptInst
 
-		exportBtn = exportPanel.add('button', undefined, "Export");   
+		exportBtn = exportPanel.add('button', undefined, exportBtnTxt); 
 		exportBtn.preferredSize = buttonSize3;
 		exportBtn.enabled = false;
 		exportBtn.onClick = exportToFile;
@@ -435,40 +511,11 @@ var UPprefsVersion = '2.0.9'; //always increment with preference file changes
                   toggleExportBtn;
 				}
               }
-		
-		// info windows  
+
+		// instruction windows  
           function showExportInst(){
-               var ExportInst = new Window('palette', "Export Instructions");
-                var body =
-                    "    Choose which files to export\n" +
-                    "          From selected files only\n" +
-                    "              1. Select file(s) in Adobe Bridge\n"+
-                    "              2. Under ‘Images’, choose 'Selected thumbnails in Bridge'\n" +
-                    "              3. Select desired export options (see below)'\n" +
-                    "              4. click 'Export'\n" +
-                    "              5. Choose name and location for your export file (.txt format)'\n" +
-                    "              6. Saven\n" +
-                    "          From all image files in a folder\n" +
-                    "              1. Select 'Entire folder'\n" +
-                    "              2. Use 'browse'  to select folder you wish to use\n" +
-                    "              3. If you want to export images in all subfolders check the box 'include subfolders'\n" +
-                    "              4. Select desired export options (see below)\n" +
-                    "              5. Click 'Export'\n" +
-                    "              6. Choose name and location for your export file (.txt format)\n" +
-                    "              7. Save\n\n" +
-                    "     After export is complete\n" +
-                    "          1. Open your .txt file in a spreadsheet using tab delimiters.\n" +
-                    "          2. Because the .txt file is created as UTF-8, it is best to use the Excel import text wizard to retain\n"+
-                    "              proper character encoding, e.g. ©, 작, ü\n"+
-                    "                a. Use import option and select a .txt file to import\n" +
-                    "                b. Text Import Wizard\n" +
-                    "                    i. File origin = 65001- Unicode (UTF-8)\n" +
-                    "                    ii. Delimited = Tab\n" +
-                    "                    iii. Finish\n" +
-                    "          3. The first row will contain the field names.\n"+
-                    "              Each row below that will contain metadata for a single exported file."
-   
-               ExportInstText = ExportInst.add('statictext', undefined, body, {multiline:true});
+               var ExportInst = new Window('palette', ExportInstTxt);  
+               ExportInstText = ExportInst.add('statictext', undefined, ExportInstTextTxt, {multiline:true});
 			   if (Folder.fs == "Windows"){
 				ExportInstText.preferredSize = [600,400];
 				}
@@ -489,23 +536,8 @@ var UPprefsVersion = '2.0.9'; //always increment with preference file changes
 			}
             
             function showExportOptInst(){
-               var exportOptInst = new Window('palette', "Export Options");
-               var body =
-                    "Export Options\n\n"+
-                    "Option 1:  prepend Image dates with '_'\n"+
-                    "   This is useful if you will be importing the metadata to Excel.\n"+                    
-                    "   XMP Date values must use the YYYY/MM/DD format.  Adding a '_' character at the beginning of\n"+
-                    "      the Date will prevent Excel from automatically changing it to a format XMP cannot understand.\n"+
-                    "       (if your system is set up for another format, that will bereflected in the way Excel displays dates)\n"+
-                    "     The '_' character will be removed when you import the data back into the image file(s).\n\n"+
-                    "Option 2:  Remove line breaks\n"+
-                    "    This is useful if you will be importing the metadata to Excel.\n"+
-                    "    When selected, line breaks (line feed and carriage return) will be replaced by a semi-colon and a space ('; ').\n"+
-                    "    When not selected, line breaks will be retained but converted to plain text place holders ('LF'), ('CR') so\n"+
-                    "       that they are not changed by Excel.  When the data is imported back to an image, the codes will be\n"+
-                    "       changed to the proper XMP encoding."
-                    
-               exportOptInstText = exportOptInst.add('statictext', undefined, body, {multiline:true});
+               var exportOptInst = new Window('palette', exportOptInstTxt);
+               exportOptInstText = exportOptInst.add('statictext', undefined, exportOptInstTextTxt, {multiline:true});
 			   if (Folder.fs == "Windows"){
 				exportOptInstText.preferredSize = [650,230];
 				}
@@ -628,8 +660,8 @@ var UPprefsVersion = '2.0.9'; //always increment with preference file changes
             // Select image files location
             imageLocBox = importPanel.add('panel', undefined, "Import to files in selected folder");
             imageLocBox.spacing = 2;
-            imageLocBox.margins = 5;     
-            imageLocBox.alignment = 'left';      
+            imageLocBox.margins = 5; 
+            imageLocBox.alignment = 'left';
             // Spacer
             spacer3 = imageLocBox.add( 'group' );
             spacer3.minimumSize = [100, 10]
@@ -639,10 +671,10 @@ var UPprefsVersion = '2.0.9'; //always increment with preference file changes
             imageLocGroup.spacing = 2;
             imageLoc = imageLocGroup.add('statictext', undefined, "");
             imageLoc.preferredSize = textSize2;
-            imageLoc.helpTip = imageFolderPath;
+            imageLoc.helpTip = imageFolderPathTT;
             /* no longer used - folder navigation is done in Bridge UI
             //imageLocBrowse = imageLocGroup.add('button', undefined, "Browse");
-            //imageLocBrowse.helpTip = imageFolderBrowse;
+            //imageLocBrowse.helpTip = imageFolderBrowseTT;
             imageLocAlert = imageLocBox.add('statictext', undefined, "? Folder not found.  Keep looking.");
             imageLocAlert.alignment = 'left';
             imageLocAlert.justify = 'left';
@@ -659,7 +691,7 @@ var UPprefsVersion = '2.0.9'; //always increment with preference file changes
             if (folderPath){
                 imageLoc.text = folderPath.toString().split ("%20").join (" ");
                 testImportImagesFolder();
-                imageLoc.helpTip = imageLoc.text+"\n\n"+imageFolderPath
+                imageLoc.helpTip = imageLoc.text+"\n\n"+imageFolderPathTT
                 }
 			}
         */
@@ -703,13 +735,13 @@ var UPprefsVersion = '2.0.9'; //always increment with preference file changes
 		dataSourceGrp.indent = 3;
         dataSourceGrp.preferredSize = [160,20]
 		dataSourceGroup = dataSourceBox.add('group');
-		dataSourceGroup.orientation = 'row';      
+		dataSourceGroup.orientation = 'row';
 		dataSourceGroup.spacing = 2;
 		dataSource = dataSourceGroup.add('edittext', undefined, "");
 		dataSource.preferredSize = textSize1
-		dataSource.helpTip = textFilePath;
+		dataSource.helpTip = textFilePathTT;
 		dataSourceBrowse = dataSourceGroup.add('button', undefined, "Browse");
-		dataSourceBrowse.helpTip = textFileBrowse;
+		dataSourceBrowse.helpTip = textFileBrowseTT;
 		dataSourceFileAlert = dataSourceBox.add('statictext', undefined, "? File not found.  Keep looking.");
         dataSourceFileAlert.graphics.foregroundColor = dataSourceFileAlert.graphics.newPen (dataSourceFileAlert.graphics.PenType.SOLID_COLOR, [1,0,0], 1);
 
@@ -724,9 +756,9 @@ var UPprefsVersion = '2.0.9'; //always increment with preference file changes
             var filePath = File.openDialog( 'Select the text file (.txt)',  "TXT  Files:*.txt" );
                 if(filePath){
              //   dataSource.text = filePath.toString().split ("%20").join (" ");
-                dataSource.text = filePath.fsName.toString().split ("%20").join (" ");  // PATH EDIT
+                dataSource.text = filePath.fsName.toString().split ("%20").join (" ");// PATH EDIT
                 testTextFileExists();
-                dataSource.helpTip = textFilePath;
+                dataSource.helpTip = textFilePathTT;
                 }
 		}
 		  
@@ -741,7 +773,7 @@ var UPprefsVersion = '2.0.9'; //always increment with preference file changes
 		writeOptions = importPanel.add('panel', undefined, "Existing Data");
 		writeOptions.minimumSize = [310, undefined]
 		writeOptions.spacing = 2;	
-		writeOptions.overwriteRb = writeOptions.add('radiobutton', undefined, "Overwrite all fields");   
+		writeOptions.overwriteRb = writeOptions.add('radiobutton', undefined, "Overwrite all fields"); 
 		writeOptions.overwriteRb.value = true
 		writeOptions.appendRb = writeOptions.add('radiobutton', undefined, "Write only to empty fields");
         writeOptions.appendRb.value = true;
@@ -836,9 +868,9 @@ var UPprefsVersion = '2.0.9'; //always increment with preference file changes
 		cancelBtn.onClick = function(){
             var appDataPlgnSet = new File (appDataFwdSlash + plgnPrefs + plgnOpt + plgnSet);
             appDataPlgnSet.encoding = "UTF8";
-            appDataPlgnSet.open ("w", "TEXT", "ttxt");      
+            appDataPlgnSet.open ("w", "TEXT", "ttxt");
             appDataPlgnSet.write (exportWhich.folderRb.value  + "|");
-            appDataPlgnSet.write (exportWhich.subfoldersCb.value  + "|");  
+            appDataPlgnSet.write (exportWhich.subfoldersCb.value  + "|");
             appDataPlgnSet.write (exportWhich.fieldsArrRb.value + "|");
             appDataPlgnSet.write (exportOptions.datesCb.value + "|");
             appDataPlgnSet.write (dataSource.text + "|");
@@ -860,7 +892,7 @@ var UPprefsVersion = '2.0.9'; //always increment with preference file changes
             appDataPlgnSet.close();
             // close hte main UI window   
             mainWindow.hide();
-            mainWindow.close();     
+            mainWindow.close(); 
 			}
  
      // if file 'appDataFwdSlash/"+projectName1+"_Import_Export/Options/settings.txt' exists, read settings and apply to dialog
@@ -873,7 +905,7 @@ var UPprefsVersion = '2.0.9'; //always increment with preference file changes
           appDataPlgnSetBkSlash.close();
 		try{   
       if (pluginSettingsArray[0] == "folder") exportWhich.folderRb.value = true;
-			if (pluginSettingsArray[1] == "true") exportWhich.subfoldersCb.value = true;  
+			if (pluginSettingsArray[1] == "true") exportWhich.subfoldersCb.value = true;
       if (pluginSettingsArray[2] == "true") exportWhich.fieldsArrRb.value = true;
 			if (pluginSettingsArray[3] == "false") exportOptions.datesCb.value = false;
 			if (pluginSettingsArray[4]) dataSource.text = pluginSettingsArray[4];
@@ -882,14 +914,14 @@ var UPprefsVersion = '2.0.9'; //always increment with preference file changes
 			if (pluginSettingsArray[7] == "true") IgnoreExtCb.value = true; 
 			if (pluginSettingsArray[8] == "true") addLabelCb.value = true;
 			if (pluginSettingsArray[9] == "false") exportOptionsLfCb.value = false;
-			exportChoice = pluginSettingsArray[10];         
+			exportChoice = pluginSettingsArray[10]; 
 			if (pluginSettingsArray[11]) exportWhich.folderEt.text = pluginSettingsArray[11];
 			if (pluginSettingsArray[12]) imageLoc.text = pluginSettingsArray[12];
-			if (pluginSettingsArray[13] == "true") imageLocSubfoldersCb.value = true;   
+			if (pluginSettingsArray[13] == "true") imageLocSubfoldersCb.value = true; 
 			if (pluginSettingsArray[14] == "true") dataSourceOptions.Path.value = true;
 			if (pluginSettingsArray[15] == "true") dataSourceOptions.Name.value = true;
 			if (pluginSettingsArray[16] == "false") dataSourceOptions.enabled = false;
-			if (pluginSettingsArray[17] == "false") IgnoreExtCb.enabled = false;         
+			if (pluginSettingsArray[17] == "false") IgnoreExtCb.enabled = false; 
             if (pluginSettingsArray[18]) mode = pluginSettingsArray[18];
             if (pluginSettingsArray[19]) lastViewedHeadersPanel = pluginSettingsArray[19]; fieldsTxt.text = "Current Fields: "+lastViewedHeadersPanel;
 			}
@@ -929,7 +961,7 @@ if (customFilePath.exists == true){ // !!! if "- Select Custom -"
            namespaceObject.namespace = item;
            namespaceObject.prefix = pre2;
            if(item.length>0){ // this function returns an empty item at the beginning, so only write to the array if it has data
-            out[count++] = namespaceObject;    
+            out[count++] = namespaceObject;
              }        
             }
         }
@@ -978,14 +1010,14 @@ else{
         //   testTextFileExtension();
   // no longer needed      testImportImagesFolder();
         testTextFileExists();
-        exportWhich.folderEt.helpTip = "Change folder using Bridge navigation"
-        imageLoc.helpTip = "Change folder using Bridge navigation"
-        dataSource.helpTip = textFilePath
+        exportWhich.folderEt.helpTip = exportWhichTT;
+        imageLoc.helpTip = imageLocTT;
+        dataSource.helpTip = textFilePathTT
         // set panel view
         toggleNav()
 		// open the window
 		mainWindow.show();
-		mainWindow.active = true;   
+		mainWindow.active = true; 
         
         // if no fields list exists, open a new window to prompt user to edit the fields list
         editFieldsPrompt = new Window('palette', "Fields UNDEFINED");
@@ -996,7 +1028,7 @@ else{
         editFieldsPromptSpcr1 = editFieldsPrompt.add('statictext', undefined, "");
         editFieldsPromptSpcr1.minimumSize = [10,80];
 
-        editFieldsPromptSt1 = editFieldsPrompt.add('statictext', undefined, "There are no fields defined for Export/Import\n\nBegin by customizing the Fields List", {multiline:true})
+        editFieldsPromptSt1 = editFieldsPrompt.add('statictext', undefined, editFieldsPromptSt1Text, {multiline:true})
         editFieldsPromptSt1.minimumSize = [500,30];
         editFieldsPromptSt1.justify = 'center';
         editFieldsPromptSt1.graphics.font = ScriptUI.newFont ("Arial", "Bold", 16);
@@ -1081,6 +1113,8 @@ var iptcFieldsArr = [
 {Schema_Field:'IPTC-Source', Label:'Source', Namespace:'http://ns.adobe.com/photoshop/1.0/', XMP_Property:'photoshop:Source', XMP_Type:'text'},
 {Schema_Field:'IPTC-Copyright Notice', Label:'Copyright Notice', Namespace:'http://purl.org/dc/elements/1.1/', XMP_Property:'dc:rights', XMP_Type:'langAlt'},
 {Schema_Field:'IPTC-Rights Usage Terms', Label:'Rights Usage Terms', Namespace:'http://ns.adobe.com/xap/1.0/rights/', XMP_Property:'xmpRights:UsageTerms', XMP_Type:'langAlt'},
+{Schema_Field:'IPTC-Alt Text (Accessibility)', Label:'Alt Text (Accessibility)', Namespace:'http://iptc.org/std/Iptc4xmpCore/1.0/xmlns/', XMP_Property:'AltTextAccessibility', XMP_Type:'langAlt'},
+{Schema_Field:'IPTC-Extended Description (Accessibility)', Label:'Extended Description (Accessibility)', Namespace:'http://iptc.org/std/Iptc4xmpCore/1.0/xmlns/', XMP_Property:'ExtDescrAccessibility', XMP_Type:'langAlt'}
 ];
 
 var dcFieldsArr = [
@@ -1167,7 +1201,7 @@ var customFieldsArr = [
 //////////////////////////////////////////////////////////////// BEGIN BUILD PROPERTIES WINDOW ////////////////////////////////////////////////////////////////
 var fieldsWindow = new Window("palette", "Customize Fields", undefined); // , {closeButton:true} removed because it casued the script to freeze
 var schemaArr = ['File','IPTC Core','Dublin Core','VRA Core','Custom'];
-var xmpTypeArr = ['', 'text', 'bag', 'seq', 'langAlt', 'boolean', 'date', 'file'];  // '-Select-', 
+var xmpTypeArr = ['', 'text', 'bag', 'seq', 'langAlt', 'boolean', 'date', 'file'];// '-Select-', 
 // used to track if custom field list has been changed
 var triggerEnterCustomName = false;
 fieldsWindow.spacing=2;
@@ -1190,9 +1224,9 @@ loadCustom.et1 = loadCustom.grp2.add("statictext", dimx4_2, "Current Fields: UND
 loadCustom.et1.minimumSize = [300,20];
 loadCustom.et1.graphics.font = ScriptUI.newFont ("Arial", 'BOLD', 14);
 loadCustom.et1.graphics.foregroundColor = loadCustom.et1.graphics.newPen (mainWindow.graphics.PenType.SOLID_COLOR, [1,0.58,0], 1);
-loadCustom.et1.helpTip = "List of fields to be exported/imported";
+loadCustom.et1.helpTip = loadCustomEt1TT;
 loadCustom.but1 = loadCustom.grp2.add("button", dimx4_8, "Change");
-loadCustom.but1.helpTip = "Select and load a saved custom field list";
+loadCustom.but1.helpTip = loadCustomBut1TT;
 loadCustom.but1.onClick = function(){ // open user prefs folder to find a saved custom fields config file
     try{
     var path = new File(appDataFwdSlash + plgnPrefs + plgnHeaders);
@@ -1237,7 +1271,7 @@ catch(e){}
 
 //loadCustom.spcr1 = loadCustom.grp2.add("statictext", spcr1, "");
 loadCustom.but2 = loadCustom.grp2.add("button", dimx4_8, "Manage");
-loadCustom.but2.helpTip = "Open folder containing your custom field lists so you can edit or delete them";
+loadCustom.but2.helpTip = loadCustomBut2TT;
 loadCustom.but2.onClick =  function(){ // open user prefs folder
     Folder(appDataFwdSlash + plgnPrefs + plgnHeaders).execute()
     }
@@ -1432,17 +1466,17 @@ var fieldLabels =fieldInput.add("group");
 fieldLabels.spacing=5;
 fieldLabels.margins = [0,0,0,0];
 fieldLabels.lbl1 = fieldLabels.add("statictext", dimx4_1, "Schema");
-fieldLabels.lbl1.helpTip = "Pre-defined schema field name (not editable)";
+fieldLabels.lbl1.helpTip = fieldLabelsLbl1TT;
 fieldLabels.lbl2 = fieldLabels.add("statictext", dimx4_2, "Field");
-fieldLabels.lbl2.helpTip = "Do not change for pre-defined schemas, set your own for custom property";
+fieldLabels.lbl2.helpTip = fieldLabelsLbl2TT;
 fieldLabels.lbl3 = fieldLabels.add("statictext", dimx4_2, "My Label");
-fieldLabels.lbl3.helpTip = "The label you want to use for the field";
+fieldLabels.lbl3.helpTip = fieldLabelsLbl3TT;
 fieldLabels.lbl4 = fieldLabels.add("statictext", dimx4_3, "Namespace");
-fieldLabels.lbl4.helpTip = "namespace URL, EXAMPLE: http://purl.org/dc/elements/1.1/";
+fieldLabels.lbl4.helpTip = fieldLabelsLbl4TT;
 fieldLabels.lbl5 = fieldLabels.add("statictext", dimx4_2, "XMP_Property");
-fieldLabels.lbl5.helpTip = "namespace prefix:property name, EXAMPLE: dc:title";
+fieldLabels.lbl5.helpTip = fieldLabelsLbl5TT;
 fieldLabels.lbl6 = fieldLabels.add("statictext", dimx4_8, "XMP_Type");
-fieldLabels.lbl6.helpTip = "XMP property type. Consult schema documentation, or set for your custom property";
+fieldLabels.lbl6.helpTip = fieldLabelsLbl6TT;
 
 var inputs =fieldInput.add("group"); inputs.spacing=5;
 //inputs.margins = [0,0,0,0];
@@ -1457,8 +1491,8 @@ inputs.ddl2 = inputs.add("dropdownlist", dimx4_8, xmpTypeArr) // XMP_Type
 
 if (typeof Array.prototype.indexOf != "function") {  
     Array.prototype.indexOf = function (el) {  
-        for(var i = 0; i < this.length; i++) if(el === this[i]) return i;  
-        return -1;  
+        for(var i = 0; i < this.length; i++) if(el === this[i]) return i;
+        return -1;
         }
     }
 
@@ -1466,8 +1500,8 @@ if (typeof Array.prototype.indexOf != "function") {
 resetGrp2 = function(){
     for(var i = 0; i < inputs.children.length; i++)
         inputs.children[i].enabled = true;
-        inputs.et1.text = "";    
-        inputs.et2.text = "";  
+        inputs.et1.text = "";
+        inputs.et2.text = "";
         inputs.et3.text = "";
         inputs.ddl1.selection = 0;
         inputs.ddl2.selection = 0;
@@ -1508,7 +1542,7 @@ inputs.ddl1.onChange=function(){
         inputs.ddl2.enabled = false;
         inputs.et1.text = selectedFieldsArr[selectedIndex].Label;
         inputs.et2.text = selectedFieldsArr[selectedIndex].Namespace;
-        inputs.et3.text = selectedFieldsArr[selectedIndex].XMP_Property;  
+        inputs.et3.text = selectedFieldsArr[selectedIndex].XMP_Property;
         inputs.ddl2.selection = xmpTypeArr.indexOf(selectedFieldsArr[selectedIndex].XMP_Type); 
         }
     // if Custom is selected
@@ -1520,8 +1554,8 @@ inputs.ddl1.onChange=function(){
 
 if (typeof Array.prototype.indexOf != "function") {  
     Array.prototype.indexOf = function (el) {  
-        for(var i = 0; i < this.length; i++) if(el === this[i]) return i;  
-        return -1;  
+        for(var i = 0; i < this.length; i++) if(el === this[i]) return i;
+        return -1;
         }
     }
 var fieldsWindowScpr = fieldsWindow.add('statictext', undefined, "");
@@ -1733,7 +1767,7 @@ if (lastViewedHeadersPanel.length > 0){
     if (customFilePath.exists == true){
       customFilePath.open ('r');
       customFileText = customFilePath.read();
-      customFilePath.close();   
+      customFilePath.close(); 
       fieldList.removeAll(); // clear all existing items from fieldList  to be replaced with items from file
         var customFileArr = customFileText.split("\n")
         fieldsArr = []
@@ -1752,7 +1786,7 @@ if (lastViewedHeadersPanel.length > 0){
      }
     else{
         loadCustom.but1.enabled = false;
-        loadCustom.but2.enabled = false;        
+        loadCustom.but2.enabled = false;
         exportBtn.enabled = false;
         loadCustom.et1.text = "Current Fields: UNDEFINED";
         customFileText = "{Schema_Field:'File-Name', Label:'File Name', Namespace:'file', XMP_Property:'file', XMP_Type:'file'}";
@@ -1981,10 +2015,10 @@ fieldsWindow.onClose = function(){mainWindow.enabled = true; mainWindow.active =
     if(mode == "import"){
       navExportBtn.value = false
       navImportBtn.value = true 
-      navExportBtn.text = "export"
+      navExportBtn.text = exportTxtLow
       exportPanel.minimumSize = hidden
       exportPanel.maximumSize = hidden
-      navImportBtn.text = arrowRight+"IMPORT"+arrowLeft
+      navImportBtn.text = arrowRight+importTxtUp+arrowLeft
       importPanel.minimumSize = panelSize
       importPanel.maximumSize = panelSize
       mainWindow.layout.layout (true)
@@ -1992,10 +2026,10 @@ fieldsWindow.onClose = function(){mainWindow.enabled = true; mainWindow.active =
     else{
       navExportBtn.value = true
       navImportBtn.value = false 
-      navExportBtn.text = arrowLeft+"EXPORT"+arrowRight
+      navExportBtn.text = arrowLeft+exportTxtUp+arrowRight
       exportPanel.minimumSize = panelSize
       exportPanel.maximumSize = panelSize
-      navImportBtn.text = "import"
+      navImportBtn.text = importTxtLow
       importPanel.minimumSize = hidden
       importPanel.maximumSize = hidden
       mainWindow.layout.layout (true)
@@ -2067,8 +2101,8 @@ app.eventHandlers.push( {handler:expImp_thumbSelected} );
         // index of last "/" 		
         var splicePathIndex1 = currentPath.lastIndexOf ("/")
         // just the file directory
-        var currentFolderPath = currentPath.substr(0,splicePathIndex1+1).split(" ").join("%20");          
-        break;     
+        var currentFolderPath = currentPath.substr(0,splicePathIndex1+1).split(" ").join("%20");
+        break; 
           }
       else{
        // if the folder has no files, get current folder name and path from Bridge workspace if (myFile instanceof File // get currentPath of first file found (not a folder)
@@ -2104,7 +2138,7 @@ var currentFolder = app.document.presentationPath
         // index of last "/" 		
         var splicePathIndex1 = currentPath.lastIndexOf ("\\")
         // just the file directory
-        var currentFolderPath = currentPath.substr(0,splicePathIndex1+1).split(" ").join("%20");     
+        var currentFolderPath = currentPath.substr(0,splicePathIndex1+1).split(" ").join("%20"); 
 
 $.writeln("currentFolder: "+ currentFolder)
 $.writeln("XcurrentFolder: "+ XcurrentFolder)
@@ -2118,7 +2152,7 @@ var currentFolder = currentPathToArray[currentPathToArray.length-2].split("%20")
 // index of last "/" 		
 var splicePathIndex1 = exportWhich.folderEt.text.lastIndexOf ("/")
 // just the file directory
-var currentFolderPath = exportWhich.folderEt.text.substr(0,splicePathIndex1+1).split(" ").join("%20");    
+var currentFolderPath = exportWhich.folderEt.text.substr(0,splicePathIndex1+1).split(" ").join("%20");
 */
 
     if (Folder.fs == "Windows"){
@@ -2131,7 +2165,7 @@ var currentFolderPath = exportWhich.folderEt.text.substr(0,splicePathIndex1+1).s
         var exportSaveLocation = "~/Desktop/"+currentFolder+"_"+lastViewedHeadersPanel+"_metadata_"+dateYMD+".txt"; // dateTime OR dateYMD
         // var exportSaveLocation = currentFolder+"_METADATA_"+dateYMD+".txt"; // let user select save location, filename based on current folder
         }
-  //  var currentPathSaveFile = currentPath+"_"+dateYMD+".txt";  save to same folder as images being exported, filename based on current folder
+  //  var currentPathSaveFile = currentPath+"_"+dateYMD+".txt";save to same folder as images being exported, filename based on current folder
         { // export brace 1 open
 		   if(exportWhich.fieldsArrRb.value == true && app.document.selections.length == 0){
 			 app.beep();
@@ -2143,7 +2177,7 @@ var currentFolderPath = exportWhich.folderEt.text.substr(0,splicePathIndex1+1).s
             var dataExportName = new File(exportSaveLocation)  // path+"md_export_"+dateYMD+".txt"  path = current thumbs folder path or exportSaveLocation
             var dataExport = dataExportName.saveDlg( caption, "Tab-delimited (Excel):*.txt,Tab-delimited (Not Excel):*.csv" );		
             dataExport.encoding = "UTF16";
-            dataExport.open ("w", "TEXT", "ttxt") //('w', 'XLS', 'XCEL');             		
+            dataExport.open ("w", "TEXT", "ttxt") //('w', 'XLS', 'XCEL'); 		
 			// Create empty objects to store pass/fail data during export
 			var filePass = 0;
 			var fileFail = 0;
@@ -2152,18 +2186,18 @@ var currentFolderPath = exportWhich.folderEt.text.substr(0,splicePathIndex1+1).s
 			var propFail = 0;
        if (dataExport){  
         var allFiles = [];
-        var selectedFolder = Folder(currentFolder) // was (currentFolderPath)// Folder(exportWhich.folderEt.text.split(" ").join("%20"));  // PATH EDIT    
+        var selectedFolder = Folder(currentFolder) // was (currentFolderPath)// Folder(exportWhich.folderEt.text.split(" ").join("%20"));// PATH EDIT    
         var appDataPlgnSet = new File (appDataFwdSlash + plgnPrefs + plgnOpt + plgnSet);
         appDataPlgnSet.encoding = "UTF8";
         appDataPlgnSet.open ("w", "TEXT", "ttxt");
         appDataPlgnSet.write (exportWhich.folderRb.value  + "|");
-        appDataPlgnSet.write (exportWhich.subfoldersCb.value  + "|");  
+        appDataPlgnSet.write (exportWhich.subfoldersCb.value  + "|");
         appDataPlgnSet.write (exportWhich.fieldsArrRb.value + "|");
         appDataPlgnSet.write (exportOptions.datesCb.value + "|");
         appDataPlgnSet.write (dataSource.text + "|");
         appDataPlgnSet.write (writeOptions.appendRb.value+ "|");
         appDataPlgnSet.write(writeOptions.overwriteRb.value + "|");
-        appDataPlgnSet.write (IgnoreExtCb.value+ "|");    
+        appDataPlgnSet.write (IgnoreExtCb.value+ "|");
         appDataPlgnSet.write (addLabelCb.value+ "|");
         appDataPlgnSet.write (exportOptionsLfCb.value+"|");
         appDataPlgnSet.write (exportChoice+"|");
@@ -2202,7 +2236,7 @@ var currentFolderPath = exportWhich.folderEt.text.substr(0,splicePathIndex1+1).s
                            getSubFolders(myFile);
                       }
                       else if (myFile instanceof File && testFileExtension(myFile) == true && testFilePrefix(myFile) == true) {
-                           allFiles.push(myFile);  
+                           allFiles.push(myFile);
                           }
                      }  
                 }
@@ -2282,7 +2316,7 @@ for (var L1 = 0; L1 < customFileArr.length; L1++){
 				// just the file directory
                 try{
                 if (exportWhich.folderRb.value == true){
-                    var spliceDirectory = allFiles[L2].fsName.toString().substr(0,splicePathIndex+1).split("%20").join(" ");  
+                    var spliceDirectory = allFiles[L2].fsName.toString().substr(0,splicePathIndex+1).split("%20").join(" ");
                     }
                 else{
                     var spliceDirectory = Thumb[L2].spec.toString().substr(0,splicePathIndex+1).split("%20").join(" ").split("/").join("\\");
@@ -2299,7 +2333,7 @@ for (var L1 = 0; L1 < customFileArr.length; L1++){
 				try{		
 				  // Get the file
 				  if (exportWhich.folderRb.value == true) var singleFile = Thumb[L2];
-				  if (exportWhich.fieldsArrRb.value == true) var  singleFile = Thumb[L2].spec;                  
+				  if (exportWhich.fieldsArrRb.value == true) var  singleFile = Thumb[L2].spec;
                   // Create an XMPFile
                   // try to open file. if it fails, save file path in error log
                     try{
@@ -2317,7 +2351,7 @@ for (var L1 = 0; L1 < customFileArr.length; L1++){
                         var xmpFile = new XMPFile(singleFile.fsName, XMPConst.UNKNOWN, XMPConst.OPEN_FOR_READ);
 					 xmpFile.encoding = "UTF8 BOM";
                         // convert to XML
-                        var xmpData = xmpFile.getXMP();          
+                        var xmpData = xmpFile.getXMP();
                         
 // FASTER
 /*
@@ -2342,7 +2376,7 @@ var xmpData = new XMPMeta(md.serialize());
 				// write return to start file properties
 				dataExport.write ('\r');
 				// Export image file name
-				dataExport.write (spliceName);   
+				dataExport.write (spliceName); 
           
 // Run export functions based on XMP_Type
 for (var L1 = 0; L1 < fieldsArr.length; L1++){      
@@ -2380,7 +2414,7 @@ var path = fieldsArr[L1].XMP_Property.slice(fieldsArr[L1].XMP_Property.indexOf("
 var path = fieldsArr[L1].XMP_Property.slice(fieldsArr[L1].XMP_Property.indexOf(":")+1)
             prop = xmpData.getProperty (fieldsArr[L1].Namespace, path);
 			if (prop){
-				if (exportOptions.datesCb .value == true) var prop = "_" + prop;                                      
+				if (exportOptions.datesCb .value == true) var prop = "_" + prop;
 				dataExport.write ('\t' + prop);
 				}
 			else{
@@ -2390,15 +2424,10 @@ var path = fieldsArr[L1].XMP_Property.slice(fieldsArr[L1].XMP_Property.indexOf("
           catch(propFail){propFail++}    
 		}
 
-	if(fieldsArr[L1].XMP_Type == 'seq' || fieldsArr[L1].XMP_Type == 'bag' || fieldsArr[L1].XMP_Type == 'langAlt'){
+	if(fieldsArr[L1].XMP_Type == 'seq' || fieldsArr[L1].XMP_Type == 'bag'){
 		try{
-//var firstColonIndex = fieldsArr[L1].XMP_Property.indexOf(":")
-//var path = fieldsArr[L1].XMP_Property.slice(firstColonIndex+1)
-var path = fieldsArr[L1].XMP_Property.slice(fieldsArr[L1].XMP_Property.indexOf(":")+1)
+                var path = fieldsArr[L1].XMP_Property.slice(fieldsArr[L1].XMP_Property.indexOf(":")+1)
                 var count = xmpData.countArrayItems(fieldsArr[L1].Namespace, path);
-// TEST    var language = xmpData.getQualifier(XMPConst.NS_DC, 'description[1]', XMPConst.NS_XML, 'lang')
- // TEST   $.writeln("language: "+language)
-                // XMPMetaObj.getQualifier(schemaNS, structName, qualNS, qualName)
                     var arString = "";
                      if(count > 0){   
                         for(var L1a = 1;L1a <= count;L1a++){
@@ -2421,11 +2450,34 @@ var path = fieldsArr[L1].XMP_Property.slice(fieldsArr[L1].XMP_Property.indexOf("
 			catch(propFail){propFail++}          
 			}
    
+	if(fieldsArr[L1].XMP_Type == 'langAlt'){ // get the x-default value
+		try{
+                var path = fieldsArr[L1].XMP_Property.slice(fieldsArr[L1].XMP_Property.indexOf(":")+1)
+                var count = xmpData.countArrayItems(fieldsArr[L1].Namespace, path);
+                    var arString = "";
+                     if(count > 0){   
+                            try{
+                                arString += xmpData.getLocalizedText(fieldsArr[L1].Namespace, path, null, "x-default");
+                                }
+                            catch(propFail){
+                                var arString = "";
+                                }
+                            }
+                        if (exportOptionsLfCb.value == true){
+                            dataExport.write ("\t" + arString.split("\n").join("; ").split("\r").join("; ").split("\t").join("; "));
+                            }
+                        else{
+                            dataExport.write ("\t" + arString.split("\n").join("(LF)").split("\r").join("(CR)").split("\t").join("(HT)"));
+                            }
+                        }	
+			catch(propFail){propFail++}          
+			}
+        
 // File properties 
     // Image File Created Date
     if(fieldsArr[L1].Schema_Field == 'File-Date Created'){
         try{
-        prop = singleFile.created;   							
+        prop = singleFile.created; 							
         var fullDate = new Date (prop);
         var month = fullDate.getMonth() + 1;
         if (month.toString().length < 2)
@@ -2448,7 +2500,7 @@ var path = fieldsArr[L1].XMP_Property.slice(fieldsArr[L1].XMP_Property.indexOf("
     // File Modified Date
     if(fieldsArr[L1].Schema_Field == 'File-Date Modified'){
 	try{
-        prop = singleFile.modified;                       
+        prop = singleFile.modified; 
         var fullDate = new Date (prop);
          var month = fullDate.getMonth() + 1;
          if (month.toString().length < 2)
@@ -2464,7 +2516,7 @@ var path = fieldsArr[L1].XMP_Property.slice(fieldsArr[L1].XMP_Property.indexOf("
         var time = fullDate.toTimeString().split(" GMT").join("");
         time= time.substr(0,10) + ":" + time.substr(10)
         var display = year+"-"+month+"-"+day+"T"+time                 
-        dataExport.write ("\t" + display);   
+        dataExport.write ("\t" + display); 
           }
 	catch(propFail){propFail++}
 	}
@@ -2475,7 +2527,7 @@ var path = fieldsArr[L1].XMP_Property.slice(fieldsArr[L1].XMP_Property.indexOf("
     // File-Size
       if(fieldsArr[L1].Schema_Field == 'File-Size'){
         try {
-           prop =  singleFile.length;                                
+           prop =  singleFile.length;
             var sizes = ["Bytes", "KB", "MB", "GB", "TB"];
             var i = parseInt(Math.floor(Math.log(prop) / Math.log(1024)));
             if (i == 0){
@@ -2537,7 +2589,7 @@ var path = fieldsArr[L1].XMP_Property.slice(fieldsArr[L1].XMP_Property.indexOf("
     if(fieldsArr[L1].Schema_Field == 'File-Color Mode'){
         try {
             prop = xmpData.getProperty (XMPConst.NS_PHOTOSHOP, "ColorMode") // TODO: find way to read directly from file
-            var mode = ["Bitmap", "Gray scale", "Indexed colour", "RGB colour", "CMYK colour", "Multi-channel", "Duotone", "LAB colour"];               
+            var mode = ["Bitmap", "Gray scale", "Indexed colour", "RGB colour", "CMYK colour", "Multi-channel", "Duotone", "LAB colour"]; 
             if (prop){
                 dataExport.write ("\t" + mode[prop]);
                 }
@@ -2572,7 +2624,7 @@ var path = fieldsArr[L1].XMP_Property.slice(fieldsArr[L1].XMP_Property.indexOf("
 	} // end
 
 // File properties     
- // exportText (XMPConst.NS_DC, "format");   // TODO: find way to read directly from file
+ // exportText (XMPConst.NS_DC, "format"); // TODO: find way to read directly from file
         /*
                 function exportText (namespace,path){
 					try{
@@ -2733,13 +2785,13 @@ function importFromFile(){
         appDataPlgnSet.encoding = "UTF8";
         appDataPlgnSet.open ("w", "TEXT", "ttxt");
         appDataPlgnSet.write (exportWhich.folderRb.value  + "|");
-        appDataPlgnSet.write (exportWhich.subfoldersCb.value  + "|");  
+        appDataPlgnSet.write (exportWhich.subfoldersCb.value  + "|");
         appDataPlgnSet.write (exportWhich.fieldsArrRb.value + "|");
         appDataPlgnSet.write (exportOptions.datesCb.value + "|");
         appDataPlgnSet.write (dataSource.text + "|");
         appDataPlgnSet.write (writeOptions.appendRb.value+ "|");
         appDataPlgnSet.write (writeOptions.overwriteRb.value + "|");
-        appDataPlgnSet.write (IgnoreExtCb.value+ "|");    
+        appDataPlgnSet.write (IgnoreExtCb.value+ "|");
         appDataPlgnSet.write (addLabelCb.value+ "|");
         appDataPlgnSet.write (exportOptionsLfCb.value+"|");
         appDataPlgnSet.write (exportChoice+"|");
@@ -2755,13 +2807,13 @@ function importFromFile(){
         appDataPlgnSet.close();
 
 		if (!imageLoc.text){
-			app.beep();                  
+			app.beep();
 			Window.alert ("ERROR: \nPlease select a folder of images");
 			return false;
 			}
 	 
 		 if (!dataSource.text){
-			app.beep();                  
+			app.beep();
 			Window.alert ("ERROR: \nPlease select a text file");
 			return false;
 			}
@@ -2776,7 +2828,7 @@ function importFromFile(){
 		var textFileHeaders = textFile[0].split ("\t");
 	// changed to use current based on selected thunbnail this can be deleted	var selectedFolder = Folder(imageLoc.text.split (" ").join ("%20"));
 		var allFiles = [];
-		
+/*		
         // get currentPath
     for (var L1x = 0; L1x < app.document.visibleThumbnails.length; L1x++) {
         if (app.document.visibleThumbnails[L1x].spec instanceof File){
@@ -2788,22 +2840,23 @@ function importFromFile(){
 //var XXcurrentPathToArray = app.document.presentationPath.split("\\")
 //var XXcurrentFolder = XXcurrentPathToArray[XXcurrentPathToArray.length-1].split("%20").join("_")
 /* replaced by above
-    
-    */
+
      //   var currentPath = app.document.visibleThumbnails[L1x].spec.toString()
      //   var currentPathToArray = app.document.visibleThumbnails[L1x].spec.toString().split("/")
      //   var currentFolder = currentPathToArray[currentPathToArray.length-2].split("%20").join("_")
         // index of last "/" 		
      //   var splicePathIndex1 = currentPath.lastIndexOf ("/")
         // just the file directory
-      //  var currentFolderPath = currentPath.substr(0,splicePathIndex1+1).split(" ").join("%20");   
-        var currentFolderPath = app.document.presentationPath;  // PATH EDIT
+      //  var currentFolderPath = currentPath.substr(0,splicePathIndex1+1).split(" ").join("%20"); 
+        
         
 //$.writeln("currentFolderPath: "+currentFolderPath)
 //$.writeln("XXcurrentFolderPath: "+XXcurrentFolderPath)
-        break;     
+        break; 
           }
         }
+    */
+    var currentFolderPath = app.document.presentationPath;// PATH EDIT
     var selectedFolder = Folder(currentFolderPath);
 //$.writeln("selectedFolder: "+selectedFolder)
 //$.writeln("XXselectedFolder: "+Folder(XXcurrentFolderPath))
@@ -2813,7 +2866,7 @@ var textFileNameArr = [];
 				 var textFileRead = textFile[L1].split ("\t")
 				// if  there is a filename value, push each file name to an array to check for dupes
 				if(textFileRead[0]){
-				 textFileNameArr.push(textFileRead[0]);  
+				 textFileNameArr.push(textFileRead[0]);
 					}
 				}
 		textFileNameArr.push("END"); 
@@ -2841,11 +2894,11 @@ var textFileNameArr = [];
 			 var allFilesList = selectedFolder.getFiles();	
 			 for (var L1 = 0; L1 < allFilesList.length; L1++) {
 				  var myFile = allFilesList[L1];
-				  if (myFile instanceof Folder  && myFile.getFiles().length > 0){ // only if folder has files (otherwise the loop stalls)
+				  if (myFile instanceof Folder && myFile.getFiles().length > 0){ // only if folder has files (otherwise the loop stalls)
 					   getSubFolders(myFile);
 				  }
 				  if (myFile instanceof File && testFileExtension(myFile) == true && testFilePrefix(myFile) == true) {
-					   allFiles.push(myFile.fsName); // PATH EDIT);                 
+					   allFiles.push(myFile.fsName); // PATH EDIT); 
 				  }
 			 }	
 		}
@@ -2902,7 +2955,7 @@ var textFileNameArr = [];
 				 var textFileRead = textFile[L1].split ("\t")
 				// if  there is a filename value, push each file name to an array to check for dupes
 				if(textFileRead[0]){
-				 textFileNameArr.push(textFileRead[0]);  
+				 textFileNameArr.push(textFileRead[0]);
 					}
 				} 
       //      var length = textFileNameArr.length,
@@ -2920,7 +2973,7 @@ var textFileNameArr = [];
                   txtFileNameDupes.push(item);
                 }          
             if(txtFileNameDupes.length > 0){          
-                app.beep();     
+                app.beep(); 
                 var duplicatesFound = new Window('dialog', "Duplicates"); 
                 duplicatesFound.alignChildren = 'left';
                 var duplicatesFoundHeaderValue = "Duplicate filenames have been found, preventing the import from running"
@@ -2939,7 +2992,7 @@ var textFileNameArr = [];
                     // Create and open the file so it can recieve data
                     var duplicateImages = new File (desktop+dupesInText)                
                     duplicateImages.encoding = "UTF8";
-                    duplicateImages.open ("w", "TEXT", "ttxt");   
+                    duplicateImages.open ("w", "TEXT", "ttxt"); 
                     // write .txt file path
                     duplicateImages.write ("DUPLICATES FOUND IN: "+dataSource.text+"\n\n");
                     // write paths and filenames to the .txt file
@@ -2956,7 +3009,7 @@ var textFileNameArr = [];
                 "  •  Select a subfolder that has no duplicates\n"+
                 "  •  Move duplicates so they are not in subfolders of the selected parent folder\n"+
                 "  •  Rename duplicates";
-                duplicatesOptions = duplicatesFound.add('statictext', [0,0,800,120], duplicatesOptionsValue, {multiline:true});             
+                duplicatesOptions = duplicatesFound.add('statictext', [0,0,800,120], duplicatesOptionsValue, {multiline:true}); 
             // Close button
             duplicatesFound.cancelBtn = duplicatesFound.add('button', undefined, "Close");
             duplicatesFound.cancelBtn.alignment = 'center';
@@ -2979,7 +3032,7 @@ var textFileNameArr = [];
 				 var textFileRead = textFile[L1].split ("\t")
 				// if  there is a filename value, push each file name to an array to check for dupes
 				if(textFileRead[0]){
-					 textFileNameArr.push(textFileRead[0]);  
+					 textFileNameArr.push(textFileRead[0]);
 					 }
 				}  
 		// run find duplicates against text file filenames array
@@ -3054,7 +3107,7 @@ var textFileNameArr = [];
             // Create and open the file so it can recieve data
             var duplicateImages = new File (desktop+dupesInText)                
             duplicateImages.encoding = "UTF8";
-            duplicateImages.open ('w', 'XLS', 'XCEL');   
+            duplicateImages.open ('w', 'XLS', 'XCEL'); 
             // write .txt file path
             duplicateImages.write ("DUPLICATES FOUND IN: "+dataSource.text+"\n\n");
             // write paths ans filenames to the .txt file
@@ -3154,7 +3207,7 @@ var textFileNameArr = [];
     {
         for (var L3 = 0; L3 < allFiles.length; L3++){
 			if ( allFiles.length > 5){
-				importingProgress.progBar.value = Math.round ((L3 / allFiles.length) * 100);  
+				importingProgress.progBar.value = Math.round ((L3 / allFiles.length) * 100);
 				  importingProgress.center();
 				  importingProgress.show();
 				  importingProgress.active = true;
@@ -3169,10 +3222,10 @@ var textFileNameArr = [];
 try{
     // if file is an .xmp sidecar - read the xmp directly to an XMPMeta Object
     if(imageFile.toString().match(/\.xmp/i) != null){  // PATH EDIT removed .fsName
-        var xmpFile = Folder (File(imageFile));  // PATH EDIT removed .fsName
-        xmpFile.open('r');  
-        var xmpData = new XMPMeta(xmpFile.read());  
-          xmpFile.close();  
+        var xmpFile = Folder (File(imageFile));// PATH EDIT removed .fsName
+        xmpFile.open('r');
+        var xmpData = new XMPMeta(xmpFile.read());
+          xmpFile.close();
         }   
     else{ 
 
@@ -3249,20 +3302,20 @@ for (var L1 = 0; L1 < customFileArr.length; L1++){
 	        	// get the array index of the specified header string
 			if (typeof Array.prototype.indexOf != "function") {  
 				Array.prototype.indexOf = function (el) {  
-					for(var i = 0; i < this.length; i++) if(el === this[i]) return i;  
-					return -1;  
+					for(var i = 0; i < this.length; i++) if(el === this[i]) return i;
+					return -1;
 					}  
                 }
 
  // remove extra " from CSV formatting
  function parseCSV(str) {  // TODO: needed?
     var arr = [];
-    var quote = false;  // true means we're inside a quoted field
+    var quote = false;// true means we're inside a quoted field
     // iterate over each character, keep track of current row and column (of the returned array)
     for (var row = col = c = 0; c < str.length; c++) {
-        var cc = str[c], nc = str[c+1];        // current character, next character
-        arr[row] = arr[row] || [];             // create a new row if necessary
-        arr[row][col] = arr[row][col] || '';   // create a new column (start with empty string) if necessary
+        var cc = str[c], nc = str[c+1];// current character, next character
+        arr[row] = arr[row] || []; // create a new row if necessary
+        arr[row][col] = arr[row][col] || ''; // create a new column (start with empty string) if necessary
         // If the current character is a quotation mark, and we're inside a
         // quoted field, and the next character is also a quotation mark,
         // add a quotation mark to the current column and skip the next character
@@ -3291,11 +3344,11 @@ for (var L1 = 0; L1 < customFileArr.length; L1++){
               // run the import
               var path = fieldsArr[L12].XMP_Property.slice(fieldsArr[L12].XMP_Property.indexOf(":")+1)
               if(textHeader.length > 0){	// add else with alert 'No matching headers
-                  var prop = xmpData.getProperty(fieldsArr[L12].Namespace, path);  							
+                  var prop = xmpData.getProperty(fieldsArr[L12].Namespace, path);							
                   var index = textFileHeaders.indexOf(textHeader)
                  if(index > 0){
                   if (writeOptions.overwriteRb.value == true){                                  
-        //    xmpData.deleteProperty(fieldsArr[L12].Namespace, path);         
+        //    xmpData.deleteProperty(fieldsArr[L12].Namespace, path); 
                   //    if (textFileValue[index].length > 0){        
  // 	xmpData.setProperty (fieldsArr[L12].Namespace, path, "XXX");
 // !!!              
@@ -3369,12 +3422,13 @@ var val = val.toString().split("(LF)").join("\n").split("(CR)").join("\r").split
 var val = ""             
 parseCSV(textFileValue[index])
 // !!! convert on export too
-var val = val.toString().split("(LF)").join("\n").split("(CR)").join("\r").split("(HT)").join("\t")
+var val = val.toString().split("(LF)").join("\n").split("(CR)").join("\r").split("(HT)").join("\t").split ('"').join ("").split('; ').join(';').split (';');
+//  textFileValue[index].split ('"').join ("").split('; ').join(';').split (';');
 											
                           if(index > 0){
                               
 												if (writeOptions.overwriteRb.value == true){
-													 xmpData.deleteProperty(fieldsArr[L7].Namespace, path);  
+													 xmpData.deleteProperty(fieldsArr[L7].Namespace, path);
 													 if (textFileValue[index].length > 0){
 													 xmpData.appendArrayItem (fieldsArr[L7].Namespace, path, val, 0, XMPConst.ALIAS_TO_ALT_TEXT);
 													xmpData.setQualifier    (fieldsArr[L7].Namespace, path + '[1]', XMPConst.NS_XML, "lang", "x-default");
@@ -3409,7 +3463,7 @@ var val = val.toString().split("(LF)").join("\n").split("(CR)").join("\r").split
                                         if (writeOptions.overwriteRb.value == true){
                                                 var count = xmpData.countArrayItems (fieldsArr[L8].Namespace, path); 
                                                 if (writeOptions.overwriteRb.value == true){
-                                                    xmpData.deleteProperty(fieldsArr[L8].Namespace, path);   
+                                                    xmpData.deleteProperty(fieldsArr[L8].Namespace, path); 
                                                     if (textFileValue[index].length > 0){
                                                         xmpData.setProperty (fieldsArr[L8].Namespace, path, "", XMPConst.ARRAY_IS_UNORDERED);
                                                         var prop = textFileValue[index].split ('"').join ("").split('; ').join(';').split (';');
@@ -3447,7 +3501,7 @@ for (var L9 = 0; L9 < fieldsArr.length; L9++){
 				 if(index > 0){
 				if (writeOptions.overwriteRb.value == true){
 					if (writeOptions.overwriteRb.value == true){
-									xmpData.deleteProperty(fieldsArr[L9].Namespace, path);       
+									xmpData.deleteProperty(fieldsArr[L9].Namespace, path); 
 									if (textFileValue[index].length > 0){
 										xmpData.setProperty (fieldsArr[L9].Namespace, path, "", XMPConst.ARRAY_IS_ORDERED);
 										var prop = textFileValue[index].split ('"').join ("").split('; ').join(';').split (';');
@@ -3489,16 +3543,16 @@ for (var L9 = 0; L9 < fieldsArr.length; L9++){
 
 // Write save file and close	
 try{
-// todo - write .xmp differently
-// if file is an .xmp sidecar - read the xmp directly to an XMPMeta Object
-if(imageFile.toString().match(/\.xmp/i) != null){  // PATH EDIT, removed .name
-  /*
-xmpFile.open('w'); 
-xmpFile.close()
-*/
-xmpFile.open('w')
-xmpFile.write(xmpData.serialize(XMPConst.SERIALIZE_OMIT_PACKET_WRAPPER | XMPConst.SERIALIZE_USE_COMPACT_FORMAT));
-xmpFile.close()
+    // todo - write .xmp differently
+    // if file is an .xmp sidecar - read the xmp directly to an XMPMeta Object
+    if(imageFile.toString().match(/\.xmp/i) != null){  // PATH EDIT, removed .name
+      /*
+    xmpFile.open('w'); 
+    xmpFile.close()
+    */
+    xmpFile.open('w')
+    xmpFile.write(xmpData.serialize(XMPConst.SERIALIZE_OMIT_PACKET_WRAPPER | XMPConst.SERIALIZE_USE_COMPACT_FORMAT));
+    xmpFile.close()
     }
 else{  
     if (xmpFile.canPutXMP(xmpData)) {
@@ -3522,12 +3576,12 @@ catch(couldNotCloseError){couldNotClose.push(allFiles[L3])}
              } // close the loop: for (var L3 = 0; L3 < allFiles.length; L3++) 
 
 		    // hide the progress bar
-            importingProgress.hide();    
-            importingProgress.close();  
+            importingProgress.hide();
+            importingProgress.close();
 			// Show results of Import
 			  if (filePass == 0){
 				   app.beep()
-					   Window.alert("Problem importing metadata")
+					   Window.alert(plgnName+"\n\nProblem importing metadata")
                 }
 			else{     
                     // Show report that import is complete
