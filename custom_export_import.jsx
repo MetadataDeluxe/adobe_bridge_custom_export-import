@@ -29,8 +29,8 @@ SOFTWARE.
 var mdMenu = "Metadata_Deluxe"; // computer friendly.  filenames - don't use spaces, use _
 var mdMenuLabel = mdMenu.split("_").join(" ")  // human friendly, replace _ with space
 var mdCeI = "Custom Export-Import";
-var plgnVers = "1.0.5";
-var codeVers = "2022-11-06";
+var mdCeIVersion = "1.0.5";
+var mdCeICodeDate = "2022-11-08";
 // added .hide() to all palette .close(), fixed Mapping display; changed export file name to current foler+dateYMD; replaced type with xmpType; replaced header with label
 // changed field arr to new style; using indexOf to remove prefix from XMP_Property for read/write; fixed fieldList.add to use dropdown field text
 // added new build properties; added populate fields list based on lastViewedHeadersPanel; register namespaces from lastViewedHeadersPanel
@@ -93,9 +93,9 @@ var codeVers = "2022-11-06";
 // 2022-11-06: added Copyright Status to basicFieldsArr; added test that file is .txt to testTextFileExists; changed fieldList column labels to show:true (otherwise column widths not working); changed button and spacing for Bridge 2023; changed Import propPass to reste for each thumb loop; changed Import Set white label to only set if the thumb had metadata changes; changed delete prop method when no text value for import when XMP_Type == 'text'; changed inputs.addEventListener addMoveDelteBtns.but4.enabled = false; changed Add button to always add at end of list because of invalid vector subscript error; addMoveDelteBtns.but4.onClick added addMoveDelteBtns enabled = false; disabled move up/down buttons  in Bridge 2023 v 13.0.0.562 because those functions cause an error; fixed double if (writeOptions.overwriteRb.value == true) which prevented Write only to empty fields; write to 'text': moved parseCSV(textFileValue[index]) above (writeOptions.overwriteRb.value == true)
 
 //Create a menu option within Adobe Bridge
-var findProjectMenu = MenuElement.find (mdMenu);
-if (findProjectMenu == null){
-	 var projectMenu = new MenuElement ('menu', mdMenuLabel, 'before Help', mdMenu);
+var findMdMenu = MenuElement.find (mdMenu);
+if (findMdMenu == null){
+	 var addMdMenu = new MenuElement ('menu', mdMenuLabel, 'before Help', mdMenu);
 	}
 var mdMenuExpImp = new MenuElement ('command', mdCeI, 'at the beginning of '+mdMenu);
 mdMenuExpImp.onSelect = function()
@@ -342,7 +342,7 @@ var UPprefsVersion = '2.0.9'; //always increment with preference file changes
    
 //////////////////////////////////////////////////////////////// BEGINNING OF MAIN UI WINDOW ////////////////////////////////////////////////////////////////
     // Create the main dialog box
-    var mainWindow = new Window('palette', mdMenuLabel+" "+mdCeI+" ("+plgnVers+")");
+    var mainWindow = new Window('palette', mdMenuLabel+" "+mdCeI+" (v"+mdCeIVersion+")");
     mainWindow.spacing = 5;
     { //  main UI window - brace 1 open
         // header
